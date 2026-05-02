@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Cadastro.css';
 
+const API_URL = 'http://localhost:8080';
+
 const Cadastro = () => {
   const [form, setForm] = useState({
     nome: '', sobrenome: '', email: '', confirmEmail: '',
@@ -23,6 +25,7 @@ const Cadastro = () => {
   const [submitted, setSubmitted]           = useState(false);
   const [loading, setLoading]               = useState(false);
   const [dots, setDots] = useState({ d1: 'active', d2: '', d3: '' });
+  const [globalError, setGlobalError] = useState('');
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -67,7 +70,6 @@ const Cadastro = () => {
     setForm((prev) => ({ ...prev, cep: val }));
     if (val.replace('-', '').length === 8) {
       setCepLoading(true); setCepOk(false);
-      // Simulação de busca — substituir por fetch real à ViaCEP
       setTimeout(() => {
         setCepLoading(false);
         setCepOk(true);
@@ -80,14 +82,104 @@ const Cadastro = () => {
     } else { setCepOk(false); }
   };
 
-  const handleSubmit = (e) => {
+  // ============================================================
+  //  VALIDAÇÃO COMPLETA — checa TODOS os campos obrigatórios
+  // ============================================================
+  const validarCadastro = () => {
+    if (!form.nome.trim())       return 'Por favor, preencha o nome.';
+    if (!form.sobrenome.trim())  return 'Por favor, preencha o sobrenome.';
+
+    const telefoneNumeros = form.telefone.replace(/\D/g, '');
+    if (telefoneNumeros.length < 10)
+      return 'Telefone inválido. Use o formato (XX) XXXXX-XXXX.';
+
+    const reEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!reEmail.test(form.email))
+      return 'E-mail inválido.';
+
+    if (form.email !== form.confirmEmail)
+      return 'Os e-mails não coincidem.';
+
+    if (form.senha.length < 8)
+      return 'A senha deve ter pelo menos 8 caracteres.';
+
+    if (form.senha !== form.confirmSenha)
+      return 'As senhas não coincidem.';
+
+    const cepNumeros = form.cep.replace(/\D/g, '');
+    if (cepNumeros.length !== 8)
+      return 'CEP inválido. Use o formato 00000-000.';
+
+    if (!form.bairro)            return 'Por favor, selecione o bairro.';
+    if (!form.logradouro.trim()) return 'Por favor, preencha o logradouro.';
+    if (!form.numero.trim())     return 'Por favor, preencha o número do endereço.';
+
+    if (!termsChecked)
+      return 'Você precisa aceitar os Termos de Uso para continuar.';
+
+    return null;
+  };
+
+  // ============================================================
+  //  ENVIO PARA O BACK-END
+  // ============================================================
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!termsChecked) { alert('Por favor, aceite os Termos de Uso para continuar.'); return; }
-    if (form.email !== form.confirmEmail) { alert('Os e-mails não coincidem.'); return; }
-    if (form.senha !== form.confirmSenha) { alert('As senhas não coincidem.'); return; }
+    setGlobalError('');
+
+    const erro = validarCadastro();
+    if (erro) {
+      setGlobalError(erro);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
     setDots({ d1: 'done', d2: 'done', d3: 'active' });
     setLoading(true);
-    setTimeout(() => { setDots({ d1: 'done', d2: 'done', d3: 'done' }); setSubmitted(true); }, 1500);
+
+    const payload = {
+      nome:              form.nome.trim(),
+      sobrenome:         form.sobrenome.trim(),
+      telefone:          form.telefone,
+      email:             form.email.trim().toLowerCase(),
+      senha:             form.senha,
+      cep:               form.cep,
+      logradouro:        form.logradouro.trim(),
+      numero:            form.numero.trim(),
+      complemento:       form.complemento.trim(),
+      bairro:            form.bairro,
+      cpf:               null,
+      aceita_termos:     termsChecked,
+      recebe_newsletter: newsChecked,
+    };
+
+    try {
+      const resposta = await fetch(`${API_URL}/api/auth/cadastro`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        setGlobalError(dados.erro || 'Não foi possível concluir o cadastro.');
+        setLoading(false);
+        setDots({ d1: 'done', d2: 'done', d3: '' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+
+      console.log('✅ Usuário criado:', dados.usuario);
+      setDots({ d1: 'done', d2: 'done', d3: 'done' });
+      setSubmitted(true);
+
+    } catch (erro) {
+      console.error('Erro ao conectar com o servidor:', erro);
+      setGlobalError('Não foi possível conectar ao servidor. Verifique se o back-end está rodando.');
+      setLoading(false);
+      setDots({ d1: 'done', d2: 'done', d3: '' });
+    }
   };
 
   const dotClass = (key) => `step-dot${dots[key] ? ' ' + dots[key] : ''}`;
@@ -105,18 +197,16 @@ const Cadastro = () => {
     ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
     : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
   const IconCheck = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>;
-  const IconAlert = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
+  const IconAlert = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>;
   const IconArrow = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>;
 
   return (
     <div className="cadastro-wrapper">
 
-      {/* ===== ANNOUNCEMENT ===== */}
       <div className="announcement">
         🎉 <strong>Novo!</strong> Cadastro gratuito — Anuncie seu primeiro item em menos de 2 minutos
       </div>
 
-      {/* ===== HEADER ===== */}
       <header className="site-header">
         <div className="nav-top">
           <Link to="/" className="logo">
@@ -129,7 +219,6 @@ const Cadastro = () => {
         </div>
       </header>
 
-      {/* ===== MAIN ===== */}
       <div className="cadastro-page">
 
         {/* LEFT PANEL */}
@@ -176,14 +265,13 @@ const Cadastro = () => {
             <div className="success-state">
               <div className="success-icon"><IconCheck /></div>
               <h2>Bem-vinda ao <em>vizinhado</em>!</h2>
-              <p>Sua conta foi criada com sucesso. Agora você já faz parte da comunidade do Santo Desapego.</p>
-              <Link to="/" className="btn-success">
-                Explorar desapegos <IconArrow />
+              <p>Sua conta foi criada com sucesso. Agora é só fazer login.</p>
+              <Link to="/login" className="btn-success">
+                Fazer login agora <IconArrow />
               </Link>
             </div>
           ) : (
             <>
-              {/* Step indicator */}
               <div className="form-header">
                 <div className="step-indicator">
                   <div className={dotClass('d1')} />
@@ -191,33 +279,31 @@ const Cadastro = () => {
                   <div className={dotClass('d3')} />
                 </div>
                 <h1>Criar sua <em>conta</em></h1>
-                <p>É gratuito e leva menos de 2 minutos.</p>
+                <p>É gratuito e leva menos de 2 minutos. Preencha todos os campos abaixo.</p>
               </div>
 
-              {/* OAuth */}
-              <div className="oauth-buttons">
-                <button type="button" className="oauth-btn">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  </svg>
-                  Entrar com Google
-                </button>
-                <button type="button" className="oauth-btn">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                  Entrar com Facebook
-                </button>
-              </div>
+              <form className="signup-form" onSubmit={handleSubmit} noValidate>
 
-              <div className="divider"><span>ou preencha os dados abaixo</span></div>
+                {/* Mensagem de erro global */}
+                {globalError && (
+                  <div style={{
+                    background: '#FFF5F3',
+                    border: '1.5px solid var(--terracotta)',
+                    color: 'var(--terracotta)',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '10px',
+                    fontSize: '0.88rem',
+                    marginBottom: '1.25rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.6rem',
+                  }}>
+                    <IconAlert />
+                    <strong>{globalError}</strong>
+                  </div>
+                )}
 
-              <form className="signup-form" onSubmit={handleSubmit}>
-
-                {/* ── Nome e Sobrenome ── */}
+                {/* Nome e Sobrenome */}
                 <div className="form-row">
                   {[
                     { label: 'Nome',      name: 'nome',      placeholder: 'Ex: Mariana', ac: 'given-name' },
@@ -234,7 +320,7 @@ const Cadastro = () => {
                   ))}
                 </div>
 
-                {/* ── Telefone ── */}
+                {/* Telefone */}
                 <div className="field-group">
                   <label className="field-label">Telefone / WhatsApp <span className="required">*</span></label>
                   <div className="field-input-wrap">
@@ -247,7 +333,7 @@ const Cadastro = () => {
                   <span className="field-hint">Usado apenas para contato sobre negociações</span>
                 </div>
 
-                {/* ── E-mail e Confirmação ── */}
+                {/* E-mail e Confirmação */}
                 <div className="field-group">
                   <label className="field-label">E-mail <span className="required">*</span></label>
                   <div className="field-input-wrap">
@@ -272,7 +358,7 @@ const Cadastro = () => {
                   {confirmEmailError && <span className="field-error"><IconAlert /> Os e-mails não coincidem.</span>}
                 </div>
 
-                {/* ── Senha e Confirmação ── */}
+                {/* Senha e Confirmação */}
                 <div className="field-group">
                   <label className="field-label">Senha <span className="required">*</span></label>
                   <div className="field-input-wrap">
@@ -280,7 +366,7 @@ const Cadastro = () => {
                     <input type={showSenha ? 'text' : 'password'} className="field-input"
                       placeholder="Mínimo 8 caracteres" name="senha" value={form.senha}
                       onChange={(e) => { handleChange(e); checkPasswordStrength(e.target.value); }}
-                      autoComplete="new-password" required />
+                      autoComplete="new-password" required minLength={8} />
                     <button type="button" className="password-toggle" onClick={() => setShowSenha(!showSenha)}>
                       {IconEye(showSenha)}
                     </button>
@@ -311,10 +397,9 @@ const Cadastro = () => {
                   {confirmSenhaError && <span className="field-error"><IconAlert /> As senhas não coincidem.</span>}
                 </div>
 
-                {/* ── Endereço ── */}
+                {/* Endereço */}
                 <div className="form-section-label">Endereço</div>
 
-                {/* CEP + Bairro */}
                 <div className="form-row">
                   <div className="field-group no-mb">
                     <label className="field-label">CEP <span className="required">*</span></label>
@@ -322,7 +407,7 @@ const Cadastro = () => {
                       <IconPin />
                       <input type="text" className={`field-input${cepOk ? ' success' : ''}`}
                         placeholder="04000-000" name="cep" value={form.cep}
-                        onChange={(e) => formatCEP(e.target.value)} maxLength={9} autoComplete="postal-code" />
+                        onChange={(e) => formatCEP(e.target.value)} maxLength={9} autoComplete="postal-code" required />
                       {cepLoading && <div className="cep-loader visible"><span /></div>}
                       {cepOk && !cepLoading && <div className="cep-ok visible"><IconCheck /></div>}
                     </div>
@@ -346,7 +431,6 @@ const Cadastro = () => {
                   </div>
                 </div>
 
-                {/* Logradouro + Número */}
                 <div className="form-row" style={{ marginTop: '1rem' }}>
                   <div className="field-group no-mb" style={{ gridColumn: '1 / -1' }}>
                     <label className="field-label">Logradouro <span className="required">*</span></label>
@@ -369,7 +453,7 @@ const Cadastro = () => {
                     </div>
                   </div>
                   <div className="field-group no-mb">
-                    <label className="field-label">Complemento</label>
+                    <label className="field-label">Complemento <span style={{ color: 'var(--ink-muted)', fontWeight: 400 }}>(opcional)</span></label>
                     <div className="field-input-wrap">
                       <IconHome />
                       <input type="text" className="field-input" placeholder="Apto, Bloco..."
@@ -378,7 +462,7 @@ const Cadastro = () => {
                   </div>
                 </div>
 
-                {/* ── Checkboxes ── */}
+                {/* Checkboxes */}
                 <div style={{ marginTop: '1.25rem' }}>
                   <div className="checkbox-group">
                     <div className={`checkbox-custom${termsChecked ? ' checked' : ''}`} onClick={() => setTermsChecked(!termsChecked)} />
@@ -409,7 +493,6 @@ const Cadastro = () => {
         </div>
       </div>
 
-      {/* FOOTER */}
       <footer className="site-footer">
         <span>© 2025 Santo Desapego — Projeto acadêmico TCC · SENAC Santo Amaro · </span>
         <a href="#">Privacidade</a> · <a href="#">Termos</a>

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import './Home.css';
 import Mapa from '../componentes/Mapa';
 
@@ -175,13 +175,44 @@ const IconHeart = () => (
     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
   </svg>
 );
+const IconLogout = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/>
+    <line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
 
 /* ════════════════════════════════════════════════════════════
    COMPONENTE
    ════════════════════════════════════════════════════════════ */
 const Home = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [favorites, setFavorites] = useState(new Set());
+
+  // ── Estado do usuário logado (lê do localStorage)
+  const [usuario, setUsuario] = useState(null);
+
+  useEffect(() => {
+    const usuarioSalvo = localStorage.getItem('sd_usuario');
+    if (usuarioSalvo) {
+      try {
+        setUsuario(JSON.parse(usuarioSalvo));
+      } catch {
+        // se o JSON estiver corrompido, limpa pra evitar loop de erro
+        localStorage.removeItem('sd_usuario');
+        localStorage.removeItem('sd_token');
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('sd_token');
+    localStorage.removeItem('sd_usuario');
+    setUsuario(null);
+    navigate('/');
+  };
 
   const toggleFav = (id) =>
     setFavorites((prev) => {
@@ -217,9 +248,59 @@ const Home = () => {
             <button className="search-btn">Buscar</button>
           </div>
 
+          {/* ───── Header dinâmico: muda se está logado ───── */}
           <nav className="nav-actions">
-            <Link to="/login">Entrar</Link>
-            <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
+            {usuario ? (
+              <>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.9rem',
+                  color: 'var(--ink)',
+                  fontWeight: 600,
+                }}>
+                  <span style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: '50%',
+                    background: 'var(--terracotta)',
+                    color: 'var(--cream)',
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                  }}>
+                    {usuario.nome[0].toUpperCase()}
+                  </span>
+                  Olá, {usuario.nome}!
+                </span>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--ink-muted)',
+                    fontSize: '0.88rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                  }}
+                >
+                  <IconLogout />
+                  Sair
+                </button>
+                <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
+              </>
+            ) : (
+              <>
+                <Link to="/login">Entrar</Link>
+                <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
+              </>
+            )}
           </nav>
         </div>
 
@@ -237,8 +318,17 @@ const Home = () => {
         <div className="hero-text">
           <span className="hero-kicker">Economia compartilhada • Santo Amaro</span>
           <h1>
-            Seu desapego <br />
-            encontra uma <em>nova história</em> aqui perto.
+            {usuario ? (
+              <>
+                Bem-vinda de volta, <em>{usuario.nome}</em>! <br />
+                Veja o que tem de novo no <em>seu bairro</em>.
+              </>
+            ) : (
+              <>
+                Seu desapego <br />
+                encontra uma <em>nova história</em> aqui perto.
+              </>
+            )}
           </h1>
           <p className="lede">
             Uma plataforma hiperlocal de compra, venda e troca entre vizinhos de Santo Amaro.
