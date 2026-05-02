@@ -4,9 +4,36 @@ import './Cadastro.css';
 
 const API_URL = 'http://localhost:8080';
 
+// ============================================================
+//  Validação real de CPF — checa os 2 dígitos verificadores
+//  (a "matemática oficial" da Receita Federal)
+// ============================================================
+const validarCPF = (cpf) => {
+  const limpo = cpf.replace(/\D/g, '');
+  if (limpo.length !== 11) return false;
+  // Rejeita CPFs com todos os dígitos iguais (111.111.111-11, etc.)
+  if (/^(\d)\1+$/.test(limpo)) return false;
+
+  // Calcula o 1º dígito verificador
+  let soma = 0;
+  for (let i = 0; i < 9; i++) soma += parseInt(limpo[i]) * (10 - i);
+  let resto = (soma * 10) % 11;
+  if (resto === 10) resto = 0;
+  if (resto !== parseInt(limpo[9])) return false;
+
+  // Calcula o 2º dígito verificador
+  soma = 0;
+  for (let i = 0; i < 10; i++) soma += parseInt(limpo[i]) * (11 - i);
+  resto = (soma * 10) % 11;
+  if (resto === 10) resto = 0;
+  if (resto !== parseInt(limpo[10])) return false;
+
+  return true;
+};
+
 const Cadastro = () => {
   const [form, setForm] = useState({
-    nome: '', sobrenome: '', email: '', confirmEmail: '',
+    nome: '', sobrenome: '', cpf: '', email: '', confirmEmail: '',
     telefone: '', senha: '', confirmSenha: '',
     cep: '', logradouro: '', numero: '', complemento: '', bairro: '',
   });
@@ -16,6 +43,7 @@ const Cadastro = () => {
   const [emailError, setEmailError]         = useState(false);
   const [confirmEmailError, setConfirmEmailError] = useState(false);
   const [confirmSenhaError, setConfirmSenhaError] = useState(false);
+  const [cpfError, setCpfError]             = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ score: 0, label: '', cls: '' });
   const [showStrength, setShowStrength]     = useState(false);
   const [cepLoading, setCepLoading]         = useState(false);
@@ -40,6 +68,20 @@ const Cadastro = () => {
 
   const validateConfirmSenha = (value) => {
     setConfirmSenhaError(value !== '' && value !== form.senha);
+  };
+
+  // Aplica máscara 000.000.000-00 conforme digita
+  const formatCPF = (value) => {
+    let v = value.replace(/\D/g, '').slice(0, 11);
+    if (v.length > 9)      v = `${v.slice(0,3)}.${v.slice(3,6)}.${v.slice(6,9)}-${v.slice(9)}`;
+    else if (v.length > 6) v = `${v.slice(0,3)}.${v.slice(3,6)}.${v.slice(6)}`;
+    else if (v.length > 3) v = `${v.slice(0,3)}.${v.slice(3)}`;
+    setForm((prev) => ({ ...prev, cpf: v }));
+
+    // Valida em tempo real só quando completou os 11 dígitos
+    const numeros = v.replace(/\D/g, '');
+    if (numeros.length === 11) setCpfError(!validarCPF(v));
+    else setCpfError(false);
   };
 
   const formatPhone = (value) => {
@@ -83,11 +125,14 @@ const Cadastro = () => {
   };
 
   // ============================================================
-  //  VALIDAÇÃO COMPLETA — checa TODOS os campos obrigatórios
+  //  VALIDAÇÃO COMPLETA — todos os campos obrigatórios
   // ============================================================
   const validarCadastro = () => {
     if (!form.nome.trim())       return 'Por favor, preencha o nome.';
     if (!form.sobrenome.trim())  return 'Por favor, preencha o sobrenome.';
+
+    if (!validarCPF(form.cpf))
+      return 'CPF inválido. Verifique os dígitos.';
 
     const telefoneNumeros = form.telefone.replace(/\D/g, '');
     if (telefoneNumeros.length < 10)
@@ -137,18 +182,20 @@ const Cadastro = () => {
     setDots({ d1: 'done', d2: 'done', d3: 'active' });
     setLoading(true);
 
+    // Removemos a máscara antes de enviar — guardamos só os números no banco.
+    // Boa prática: facilita buscas e ocupa menos espaço.
     const payload = {
       nome:              form.nome.trim(),
       sobrenome:         form.sobrenome.trim(),
-      telefone:          form.telefone,
+      cpf:               form.cpf.replace(/\D/g, ''),       // 52998224725 (11 dígitos)
+      telefone:          form.telefone.replace(/\D/g, ''),  // 11976069928 (11 dígitos)
       email:             form.email.trim().toLowerCase(),
       senha:             form.senha,
-      cep:               form.cep,
+      cep:               form.cep.replace(/\D/g, ''),       // 04746085 (8 dígitos)
       logradouro:        form.logradouro.trim(),
       numero:            form.numero.trim(),
       complemento:       form.complemento.trim(),
       bairro:            form.bairro,
-      cpf:               null,
       aceita_termos:     termsChecked,
       recebe_newsletter: newsChecked,
     };
@@ -192,6 +239,7 @@ const Cadastro = () => {
   const IconPin   = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>;
   const IconPhone = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.8a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
   const IconHome  = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+  const IconID    = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="14" x="3" y="5" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M14 9h4M14 13h4M6.5 17.5c0-1 1-2 2.5-2s2.5 1 2.5 2"/></svg>;
   const IconChevron = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>;
   const IconEye   = (open) => open
     ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -320,21 +368,34 @@ const Cadastro = () => {
                   ))}
                 </div>
 
-                {/* Telefone */}
-                <div className="field-group">
-                  <label className="field-label">Telefone / WhatsApp <span className="required">*</span></label>
-                  <div className="field-input-wrap">
-                    <IconPhone />
-                    <input type="tel" className="field-input" placeholder="(11) 99999-9999"
-                      name="telefone" value={form.telefone}
-                      onChange={(e) => formatPhone(e.target.value)}
-                      autoComplete="tel" required />
+                {/* CPF + Telefone (lado a lado) */}
+                <div className="form-row" style={{ marginTop: '1rem' }}>
+                  <div className="field-group no-mb">
+                    <label className="field-label">CPF <span className="required">*</span></label>
+                    <div className="field-input-wrap">
+                      <IconID />
+                      <input type="text" className={`field-input${cpfError ? ' error' : ''}`}
+                        placeholder="000.000.000-00" name="cpf" value={form.cpf}
+                        onChange={(e) => formatCPF(e.target.value)}
+                        maxLength={14} required />
+                    </div>
+                    {cpfError && <span className="field-error"><IconAlert /> CPF inválido.</span>}
                   </div>
-                  <span className="field-hint">Usado apenas para contato sobre negociações</span>
+
+                  <div className="field-group no-mb">
+                    <label className="field-label">Telefone / WhatsApp <span className="required">*</span></label>
+                    <div className="field-input-wrap">
+                      <IconPhone />
+                      <input type="tel" className="field-input" placeholder="(11) 99999-9999"
+                        name="telefone" value={form.telefone}
+                        onChange={(e) => formatPhone(e.target.value)}
+                        autoComplete="tel" required />
+                    </div>
+                  </div>
                 </div>
 
                 {/* E-mail e Confirmação */}
-                <div className="field-group">
+                <div className="field-group" style={{ marginTop: '1rem' }}>
                   <label className="field-label">E-mail <span className="required">*</span></label>
                   <div className="field-input-wrap">
                     <IconMail />

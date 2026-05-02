@@ -252,14 +252,17 @@ const Home = () => {
           <nav className="nav-actions">
             {usuario ? (
               <>
-                <span style={{
+                <Link to="/perfil" style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.5rem',
                   fontSize: '0.9rem',
                   color: 'var(--ink)',
                   fontWeight: 600,
-                }}>
+                  textDecoration: 'none',
+                }}
+                title="Meu perfil"
+                >
                   <span style={{
                     width: 30,
                     height: 30,
@@ -270,11 +273,14 @@ const Home = () => {
                     placeItems: 'center',
                     fontSize: '0.8rem',
                     fontWeight: 700,
+                    overflow: 'hidden',
                   }}>
-                    {usuario.nome[0].toUpperCase()}
+                    {usuario.foto_perfil
+                      ? <img src={usuario.foto_perfil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : usuario.nome[0].toUpperCase()}
                   </span>
                   Olá, {usuario.nome}!
-                </span>
+                </Link>
                 <button
                   onClick={handleLogout}
                   style={{
@@ -320,7 +326,7 @@ const Home = () => {
           <h1>
             {usuario ? (
               <>
-                Bem-vinda de volta, <em>{usuario.nome}</em>! <br />
+                Olá, <em>{usuario.nome}</em>! <br />
                 Veja o que tem de novo no <em>seu bairro</em>.
               </>
             ) : (
