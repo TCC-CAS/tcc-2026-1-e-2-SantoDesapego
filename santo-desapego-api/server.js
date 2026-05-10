@@ -10,9 +10,9 @@ const pool = require('./db');
 
 const app = express();
 
-// Aumenta o limite de payload pra suportar fotos em base64 (até ~10MB)
+// Aumenta o limite pra suportar múltiplas imagens em base64
 app.use(cors());
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: '30mb' }));
 
 // ============================================================
 // MIDDLEWARE — verifica JWT em rotas protegidas
@@ -59,6 +59,34 @@ const validarSenhaForte = (senha, dadosUsuario = {}) => {
     return 'A senha não pode conter sequências óbvias (ex: 123456).';
 
   return null;
+};
+
+// ============================================================
+//  RN01 — Validação de CEP de Santo Amaro
+// ============================================================
+const validarCEPSantoAmaro = (cep) => {
+  const numeros = cep.replace(/\D/g, '');
+  if (numeros.length !== 8) return false;
+  const prefixo = parseInt(numeros.slice(0, 5));
+  return prefixo >= 4600 && prefixo <= 4799;
+};
+
+// ============================================================
+//  RN09 — Moderação de conteúdo (palavras proibidas)
+// ============================================================
+const PALAVRAS_PROIBIDAS = [
+  'arma', 'armas', 'pistola', 'revolver', 'revólver', 'rifle', 'munição', 'municao',
+  'fuzil', 'espingarda', 'cocaina', 'cocaína', 'maconha', 'crack', 'heroina', 'heroína',
+  'lsd', 'ecstasy', 'arara-azul', 'mico-leao', 'jaguatirica', 'pornografia',
+  'erotico', 'erótico', 'fetiche', 'cnh falsa', 'rg falso', 'diploma falso', 'documento falso',
+];
+
+const conteudoTemPalavrasProibidas = (texto) => {
+  const textoLower = texto.toLowerCase();
+  return PALAVRAS_PROIBIDAS.find((p) => {
+    const regex = new RegExp(`\\b${p}\\b`, 'i');
+    return regex.test(textoLower);
+  });
 };
 
 // ──────────────────────────────────────────────────────────
@@ -228,8 +256,7 @@ app.post('/api/auth/google', async (req, res) => {
 });
 
 // ============================================================
-//  GET PERFIL — retorna dados completos + foto + ESTATÍSTICAS
-//  [RF05] + [RF13]
+//  GET PERFIL — com estatísticas REAIS do banco
 // ============================================================
 app.get('/api/usuario/perfil', autenticar, async (req, res) => {
   try {
@@ -246,19 +273,22 @@ app.get('/api/usuario/perfil', autenticar, async (req, res) => {
 
     const usuario = resultado.rows[0];
 
-    // ────────────────────────────────────────────────
-    // Estatísticas do painel [RF13 — Painel do Vendedor]
-    // Como ainda não temos as tabelas anuncios/transacoes/avaliacoes,
-    // os números vêm zerados. Quando você criar essas tabelas,
-    // basta substituir esses zeros por COUNTs reais.
-    // ────────────────────────────────────────────────
+    // Estatísticas reais do banco
+    const stats = await pool.query(
+      `SELECT
+         COUNT(*) FILTER (WHERE status = 'ativo')   AS anuncios_ativos,
+         COUNT(*) FILTER (WHERE status = 'vendido') AS anuncios_vendidos,
+         COUNT(*) FILTER (WHERE status = 'pausado') AS anuncios_pausados
+       FROM anuncios WHERE vendedor_id = $1`, [req.userId]
+    );
+
     const estatisticas = {
-      anuncios_ativos: 0,
-      anuncios_vendidos: 0,
-      anuncios_pausados: 0,
+      anuncios_ativos:    parseInt(stats.rows[0]?.anuncios_ativos)   || 0,
+      anuncios_vendidos:  parseInt(stats.rows[0]?.anuncios_vendidos) || 0,
+      anuncios_pausados:  parseInt(stats.rows[0]?.anuncios_pausados) || 0,
       compras_realizadas: 0,
-      reputacao_media: null,    // null = ainda sem avaliações
-      total_avaliacoes: 0,
+      reputacao_media:    null,
+      total_avaliacoes:   0,
       mensagens_nao_lidas: 0,
     };
 
@@ -270,7 +300,7 @@ app.get('/api/usuario/perfil', autenticar, async (req, res) => {
 });
 
 // ============================================================
-//  PUT PERFIL — atualiza dados pessoais e endereço
+//  PUT PERFIL
 // ============================================================
 app.put('/api/usuario/perfil', autenticar, async (req, res) => {
   try {
@@ -313,27 +343,21 @@ app.put('/api/usuario/perfil', autenticar, async (req, res) => {
 
 // ============================================================
 //  PUT FOTO DE PERFIL
-//  Recebe a imagem em base64 (já redimensionada pelo front-end)
 // ============================================================
 app.put('/api/usuario/foto', autenticar, async (req, res) => {
   try {
     const { foto_perfil } = req.body;
 
-    // foto_perfil = null → remoção
-    // foto_perfil = string → atualização
     if (foto_perfil !== null && typeof foto_perfil !== 'string') {
       return res.status(400).json({ erro: 'Formato de foto inválido.' });
     }
 
-    // Limite de segurança: 700KB de string base64
-    // (base64 ocupa ~33% mais espaço que o binário, então 700KB ≈ 525KB de imagem real)
     if (foto_perfil && foto_perfil.length > 700000) {
       return res.status(400).json({
         erro: 'A foto está muito grande. Tente uma imagem menor.'
       });
     }
 
-    // Valida prefixo data:image/ pra garantir que é uma imagem mesmo
     if (foto_perfil && !foto_perfil.startsWith('data:image/')) {
       return res.status(400).json({ erro: 'Formato de imagem não suportado.' });
     }
@@ -354,7 +378,7 @@ app.put('/api/usuario/foto', autenticar, async (req, res) => {
 });
 
 // ============================================================
-//  PUT SENHA — RN03
+//  PUT SENHA
 // ============================================================
 app.put('/api/usuario/senha', autenticar, async (req, res) => {
   try {
@@ -399,7 +423,7 @@ app.put('/api/usuario/senha', autenticar, async (req, res) => {
 });
 
 // ============================================================
-//  GET EXPORTAR — LGPD [RF04]
+//  GET EXPORTAR — LGPD
 // ============================================================
 app.get('/api/usuario/exportar', autenticar, async (req, res) => {
   try {
@@ -428,7 +452,7 @@ app.get('/api/usuario/exportar', autenticar, async (req, res) => {
 });
 
 // ============================================================
-//  DELETE CONTA — [RF04 + RN10]
+//  DELETE CONTA
 // ============================================================
 app.delete('/api/usuario/conta', autenticar, async (req, res) => {
   try {
@@ -454,6 +478,249 @@ app.delete('/api/usuario/conta', autenticar, async (req, res) => {
   } catch (erro) {
     console.error('Erro ao excluir conta:', erro);
     return res.status(500).json({ erro: 'Erro ao excluir conta.' });
+  }
+});
+
+// ============================================================
+//  GET CATEGORIAS — lista hierárquica
+// ============================================================
+app.get('/api/categorias', async (req, res) => {
+  try {
+    const resultado = await pool.query(
+      `SELECT id, nome, slug, icone, categoria_pai, ordem
+       FROM categorias ORDER BY ordem, nome`
+    );
+
+    const principais = resultado.rows.filter((c) => c.categoria_pai === null);
+    const filhas     = resultado.rows.filter((c) => c.categoria_pai !== null);
+
+    const categorias = principais.map((p) => ({
+      ...p,
+      subcategorias: filhas.filter((f) => f.categoria_pai === p.id),
+    }));
+
+    return res.json({ categorias });
+  } catch (erro) {
+    console.error('Erro ao listar categorias:', erro);
+    return res.status(500).json({ erro: 'Erro ao listar categorias.' });
+  }
+});
+
+// ============================================================
+//  POST ANÚNCIO — cria com validações
+// ============================================================
+app.post('/api/anuncios', autenticar, async (req, res) => {
+  const client = await pool.connect();
+
+  try {
+    const {
+      titulo, descricao, preco, aceita_troca,
+      estado_conservacao, categoria_id,
+      cep, bairro,
+      imagens
+    } = req.body;
+
+    // Validações básicas
+    if (!titulo || titulo.trim().length < 5)
+      return res.status(400).json({ erro: 'Título precisa ter pelo menos 5 caracteres.' });
+    if (titulo.length > 120)
+      return res.status(400).json({ erro: 'Título muito longo (máximo 120 caracteres).' });
+    if (!descricao || descricao.trim().length < 20)
+      return res.status(400).json({ erro: 'Descrição precisa ter pelo menos 20 caracteres.' });
+    if (!preco || preco < 0)
+      return res.status(400).json({ erro: 'Informe um preço válido.' });
+    if (!['novo', 'seminovo', 'usado', 'para-reparo'].includes(estado_conservacao))
+      return res.status(400).json({ erro: 'Estado de conservação inválido.' });
+    if (!categoria_id)
+      return res.status(400).json({ erro: 'Selecione uma categoria.' });
+
+    // RN01 — Restrição Geográfica
+    if (!validarCEPSantoAmaro(cep)) {
+      return res.status(400).json({
+        erro: 'Anúncios só podem ser publicados em CEPs de Santo Amaro e regiões limítrofes (zona sul de SP). [RN01]'
+      });
+    }
+
+    // RN09 — Moderação de Conteúdo
+    const palavraProibida = conteudoTemPalavrasProibidas(`${titulo} ${descricao}`);
+    if (palavraProibida) {
+      return res.status(400).json({
+        erro: `Seu anúncio contém conteúdo não permitido pelos Termos de Uso. Revise o título e a descrição. [RN09]`
+      });
+    }
+
+    // RFN19 — Limites de Upload
+    if (!imagens || !Array.isArray(imagens) || imagens.length === 0)
+      return res.status(400).json({ erro: 'Envie pelo menos 1 imagem do produto.' });
+    if (imagens.length > 6)
+      return res.status(400).json({ erro: 'Máximo de 6 imagens por anúncio.' });
+
+    const tamanhoTotal = imagens.reduce((acc, img) => acc + (img?.length || 0), 0);
+    if (tamanhoTotal > 5 * 1024 * 1024) {
+      return res.status(400).json({ erro: 'Imagens muito grandes no total. Tente reduzir a quantidade ou qualidade.' });
+    }
+
+    for (const img of imagens) {
+      if (typeof img !== 'string' || !img.startsWith('data:image/')) {
+        return res.status(400).json({ erro: 'Uma das imagens está em formato inválido.' });
+      }
+    }
+
+    // Verifica se categoria existe
+    const cat = await client.query('SELECT id FROM categorias WHERE id = $1', [categoria_id]);
+    if (cat.rows.length === 0) {
+      return res.status(400).json({ erro: 'Categoria inválida.' });
+    }
+
+    // Inicia transação (ACID)
+    await client.query('BEGIN');
+
+    const cepLimpo = cep.replace(/\D/g, '');
+
+    const novoAnuncio = await client.query(
+      `INSERT INTO anuncios
+        (vendedor_id, categoria_id, titulo, descricao, preco,
+         aceita_troca, estado_conservacao, cep, bairro, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'ativo')
+       RETURNING id, titulo, preco, status, data_criacao`,
+      [
+        req.userId, categoria_id, titulo.trim(), descricao.trim(), preco,
+        aceita_troca === true, estado_conservacao, cepLimpo, bairro || null
+      ]
+    );
+
+    const anuncioId = novoAnuncio.rows[0].id;
+
+    // Insere imagens (a primeira é a principal)
+    for (let i = 0; i < imagens.length; i++) {
+      await client.query(
+        `INSERT INTO anuncio_imagens (anuncio_id, imagem, ordem, is_principal)
+         VALUES ($1, $2, $3, $4)`,
+        [anuncioId, imagens[i], i, i === 0]
+      );
+    }
+
+    await client.query('COMMIT');
+
+    console.log(`📦 Anúncio #${anuncioId} criado por usuário #${req.userId}`);
+
+    return res.status(201).json({
+      mensagem: 'Anúncio publicado com sucesso!',
+      anuncio: novoAnuncio.rows[0]
+    });
+
+  } catch (erro) {
+    await client.query('ROLLBACK');
+    console.error('Erro ao criar anúncio:', erro);
+    return res.status(500).json({ erro: 'Erro ao publicar anúncio.' });
+  } finally {
+    client.release();
+  }
+});
+
+// ============================================================
+//  GET ANÚNCIOS — lista com filtros (pra tela Explorar)
+// ============================================================
+app.get('/api/anuncios', async (req, res) => {
+  try {
+    const {
+      categoria_id,
+      preco_min,
+      preco_max,
+      estado_conservacao,
+      aceita_troca,
+      bairro,
+      ordenacao = 'recentes',
+      pagina = 1,
+      limite = 12
+    } = req.query;
+
+    let query = `
+      SELECT 
+        a.id, a.titulo, a.descricao, a.preco, a.aceita_troca,
+        a.estado_conservacao, a.bairro, a.status, a.data_criacao,
+        c.nome AS categoria_nome,
+        u.nome AS vendedor_nome,
+        u.foto_perfil AS vendedor_foto,
+        (SELECT imagem FROM anuncio_imagens WHERE anuncio_id = a.id AND is_principal = true LIMIT 1) AS imagem_principal
+      FROM anuncios a
+      JOIN categorias c ON a.categoria_id = c.id
+      JOIN usuarios u ON a.vendedor_id = u.id
+      WHERE a.status = 'ativo'
+    `;
+
+    const params = [];
+    let paramIndex = 1;
+
+    if (categoria_id) {
+      query += ` AND a.categoria_id = $${paramIndex}`;
+      params.push(categoria_id);
+      paramIndex++;
+    }
+
+    if (preco_min) {
+      query += ` AND a.preco >= $${paramIndex}`;
+      params.push(preco_min);
+      paramIndex++;
+    }
+
+    if (preco_max) {
+      query += ` AND a.preco <= $${paramIndex}`;
+      params.push(preco_max);
+      paramIndex++;
+    }
+
+    if (estado_conservacao) {
+      query += ` AND a.estado_conservacao = $${paramIndex}`;
+      params.push(estado_conservacao);
+      paramIndex++;
+    }
+
+    if (aceita_troca === 'true') {
+      query += ` AND a.aceita_troca = true`;
+    }
+
+    if (bairro) {
+      query += ` AND a.bairro = $${paramIndex}`;
+      params.push(bairro);
+      paramIndex++;
+    }
+
+    // Ordenação
+    if (ordenacao === 'preco-menor') {
+      query += ' ORDER BY a.preco ASC';
+    } else if (ordenacao === 'preco-maior') {
+      query += ' ORDER BY a.preco DESC';
+    } else {
+      query += ' ORDER BY a.data_criacao DESC';
+    }
+
+    // Paginação
+    const offset = (pagina - 1) * limite;
+    query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    params.push(limite, offset);
+
+    const resultado = await pool.query(query, params);
+
+    // Conta total pra paginação
+    let countQuery = 'SELECT COUNT(*) FROM anuncios a WHERE a.status = $1';
+    const countParams = ['ativo'];
+    const totalResult = await pool.query(countQuery, countParams);
+    const total = parseInt(totalResult.rows[0].count);
+
+    return res.json({
+      anuncios: resultado.rows,
+      paginacao: {
+        pagina_atual: parseInt(pagina),
+        total_paginas: Math.ceil(total / limite),
+        total_itens: total,
+        itens_por_pagina: parseInt(limite)
+      }
+    });
+
+  } catch (erro) {
+    console.error('Erro ao listar anúncios:', erro);
+    return res.status(500).json({ erro: 'Erro ao buscar anúncios.' });
   }
 });
 

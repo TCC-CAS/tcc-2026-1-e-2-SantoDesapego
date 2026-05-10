@@ -221,6 +221,9 @@ const Home = () => {
       return next;
     });
 
+  // ── CTA "Anunciar grátis": leva pra /anunciar se logado, pra /cadastro se visitante ──
+  const linkAnunciar = usuario ? '/anunciar' : '/cadastro';
+
   return (
     <div className="home-page">
 
@@ -299,7 +302,7 @@ const Home = () => {
                   <IconLogout />
                   Sair
                 </button>
-                <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
+                <Link to="/anunciar" className="btn-sell">+ Anunciar grátis</Link>
               </>
             ) : (
               <>
@@ -342,9 +345,9 @@ const Home = () => {
           </p>
 
           <div className="hero-cta-row">
-            <a href="#produtos" className="btn-home-primary">
+            <Link to="/explorar" className="btn-home-primary">
               Explorar desapegos <IconArrow />
-            </a>
+            </Link>
             <a href="#como-funciona" className="btn-ghost">Como funciona</a>
           </div>
 
@@ -384,7 +387,7 @@ const Home = () => {
               <h2>Explore por <em>categoria</em></h2>
               <p>Do sofá ao tênis — tudo perto de você.</p>
             </div>
-            <a href="#" className="head-link">Ver tudo →</a>
+            <Link to="/explorar" className="head-link">Ver tudo →</Link>
           </div>
 
           <div className="cat-grid">
@@ -409,7 +412,7 @@ const Home = () => {
               <h2>Desapegos <em>fresquinhos</em></h2>
               <p>Anunciados nas últimas 24 horas pelos seus vizinhos.</p>
             </div>
-            <a href="#" className="head-link">Ver todos →</a>
+            <Link to="/explorar" className="head-link">Ver todos →</Link>
           </div>
 
           {/* Filter chips */}
@@ -549,9 +552,11 @@ const Home = () => {
       <section className="cta-section">
         <div className="cta-wrap">
           <h2>Tem algo <em>parado em casa</em>?<br />Transforme em desapego.</h2>
-          <p>Cadastro gratuito, anúncio em 2 minutos. Seu próximo vizinho-comprador está aqui do lado.</p>
-          <Link to="/cadastro" className="btn-home-primary cta-btn">
-            Anunciar meu primeiro item <IconArrow />
+          <p>{usuario
+            ? 'Anúncio em 2 minutos. Seu próximo vizinho-comprador está aqui do lado.'
+            : 'Cadastro gratuito, anúncio em 2 minutos. Seu próximo vizinho-comprador está aqui do lado.'}</p>
+          <Link to={linkAnunciar} className="btn-home-primary cta-btn">
+            {usuario ? 'Criar novo anúncio' : 'Anunciar meu primeiro item'} <IconArrow />
           </Link>
         </div>
       </section>
