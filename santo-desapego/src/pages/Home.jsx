@@ -190,6 +190,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [favorites, setFavorites] = useState(new Set());
+  const [termoBusca, setTermoBusca] = useState('');
 
   // ── Estado do usuário logado (lê do localStorage)
   const [usuario, setUsuario] = useState(null);
@@ -213,6 +214,15 @@ const Home = () => {
     setUsuario(null);
     navigate('/');
   };
+  
+  const handleBuscar = (e) => {
+    e.preventDefault();
+    if (termoBusca.trim()) {
+      navigate(`/explorar?busca=${encodeURIComponent(termoBusca.trim())}`);
+    } else {
+      navigate('/explorar');
+    }
+  };
 
   const toggleFav = (id) =>
     setFavorites((prev) => {
@@ -230,7 +240,7 @@ const Home = () => {
       {/* ── Announcement ── */}
       <div className="announcement">
         🌱 Economia circular em Santo Amaro:{' '}
-        <strong>já evitamos 2,4 toneladas</strong> de descarte neste mês.
+        <strong>menos descarte, mais comunidade</strong> entre vizinhos.
       </div>
 
       {/* ── Header ── */}
@@ -243,12 +253,18 @@ const Home = () => {
 
           <div className="search-bar">
             <IconSearch />
-            <input type="text" placeholder="Buscar sofá, bicicleta, livro, notebook..." />
+            <input 
+              type="text" 
+              placeholder="Buscar sofá, bicicleta, livro, notebook..." 
+              value={termoBusca}
+              onChange={(e) => setTermoBusca(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleBuscar(e)}
+            />
             <span className="search-location">
               <IconPin />
               Santo Amaro, SP
             </span>
-            <button className="search-btn">Buscar</button>
+            <button className="search-btn" onClick={handleBuscar}>Buscar</button>
           </div>
 
           {/* ───── Header dinâmico: muda se está logado ───── */}
@@ -314,9 +330,17 @@ const Home = () => {
         </div>
 
         <nav className="nav-categories">
-          {['Todos','Móveis & Casa','Eletrônicos','Moda','Infantil & Bebê','Livros','Esporte & Lazer','Arte & Decoração','Ferramentas','Brechó vintage','Trocas 🔄'].map((cat, i) => (
-            <a key={cat} href="#" className={i === 0 ? 'active' : ''}>{cat}</a>
-          ))}
+          <Link to="/explorar">Todos</Link>
+          <Link to="/explorar?categoria_id=1">🛋️ Móveis & Casa</Link>
+          <Link to="/explorar?categoria_id=2">💻 Eletrônicos</Link>
+          <Link to="/explorar?categoria_id=3">👗 Moda</Link>
+          <Link to="/explorar?categoria_id=4">🧸 Infantil & Bebê</Link>
+          <Link to="/explorar?categoria_id=5">📚 Livros</Link>
+          <Link to="/explorar?categoria_id=6">🚴 Esporte & Lazer</Link>
+          <Link to="/explorar?categoria_id=7">🎨 Arte & Decoração</Link>
+          <Link to="/explorar?categoria_id=8">🔧 Ferramentas</Link>
+          <Link to="/explorar">🕰️ Brechó vintage</Link>
+          <Link to="/explorar?aceita_troca=true">Trocas 🔄</Link>
         </nav>
       </header>
 
@@ -353,9 +377,9 @@ const Home = () => {
 
           <div className="hero-trust">
             {[
-              { num: '1.247', lbl: 'vizinhos ativos' },
-              { num: '3.590', lbl: 'itens circulando' },
-              { num: '4,9★',  lbl: 'avaliação média' },
+              { num: '🌱', lbl: 'Economia circular' },
+              { num: '🤝', lbl: 'Comunidade local' },
+              { num: '♻️',  lbl: 'Consumo consciente' },
             ].map((t) => (
               <div className="trust-item" key={t.lbl}>
                 <span className="num">{t.num}</span>

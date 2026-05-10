@@ -630,6 +630,7 @@ app.get('/api/anuncios', async (req, res) => {
       estado_conservacao,
       aceita_troca,
       bairro,
+      busca,
       ordenacao = 'recentes',
       pagina = 1,
       limite = 12
@@ -653,8 +654,25 @@ app.get('/api/anuncios', async (req, res) => {
     let paramIndex = 1;
 
     if (categoria_id) {
-      query += ` AND a.categoria_id = $${paramIndex}`;
+      // Busca anúncios da categoria OU de suas subcategorias
+      query += ` AND (a.categoria_id = $${paramIndex} OR c.categoria_pai = $${paramIndex})`;
       params.push(categoria_id);
+      paramIndex++;
+    }
+
+    if (busca) {
+      // Busca por texto no título ou descrição (case-insensitive, ignora acentos)
+      // Normaliza tanto o termo de busca quanto os dados usando TRANSLATE
+      const buscaNormalizada = busca
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+      
+      query += ` AND (
+        TRANSLATE(LOWER(a.titulo), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn') LIKE $${paramIndex}
+        OR TRANSLATE(LOWER(a.descricao), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn') LIKE $${paramIndex}
+      )`;
+      params.push(`%${buscaNormalizada}%`);
       paramIndex++;
     }
 

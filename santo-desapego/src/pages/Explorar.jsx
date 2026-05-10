@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './Explorar.css';
+
+const API_URL = 'http://localhost:8080/api';
 
 /* ── Ícones ─────────────────────────────────────────────────── */
 const IconSearch = () => (
@@ -23,10 +25,16 @@ const IconLogout = () => (
 
 const Explorar = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [usuario, setUsuario] = useState(null);
+  const [categorias, setCategorias] = useState([]);
+  const [anuncios, setAnuncios] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [termoBusca, setTermoBusca] = useState('');
   
   // Estados de filtros
   const [ordenacao, setOrdenacao] = useState('recentes');
+  const [categoriaAtiva, setCategoriaAtiva] = useState(null);
   const [tabAtiva, setTabAtiva] = useState('todos');
   const [precoMin, setPrecoMin] = useState(0);
   const [precoMax, setPrecoMax] = useState(5000);
@@ -48,11 +56,84 @@ const Explorar = () => {
     }
   }, []);
   
+  // Busca categorias
+  useEffect(() => {
+    fetch(`${API_URL}/categorias`)
+      .then(res => res.json())
+      .then(data => setCategorias(data.categorias || []))
+      .catch(err => console.error('Erro ao buscar categorias:', err));
+  }, []);
+  
+  // Lê parâmetros da URL quando a página carrega
+  useEffect(() => {
+    const categoriaUrl = searchParams.get('categoria_id');
+    const aceitaTrocaUrl = searchParams.get('aceita_troca');
+    const buscaUrl = searchParams.get('busca');
+    
+    if (categoriaUrl) {
+      setCategoriaAtiva(parseInt(categoriaUrl));
+    }
+    if (aceitaTrocaUrl === 'true') {
+      setTabAtiva('troca');
+    }
+    // Atualiza o input de busca com o termo da URL
+    if (buscaUrl) {
+      setTermoBusca(buscaUrl);
+    } else {
+      setTermoBusca('');
+    }
+  }, [searchParams]);
+  
+  // Busca anúncios quando os filtros mudam OU searchParams muda
+  useEffect(() => {
+    buscarAnuncios();
+  }, [ordenacao, categoriaAtiva, tabAtiva, searchParams]);
+  
+  const buscarAnuncios = async () => {
+    setCarregando(true);
+    try {
+      const params = new URLSearchParams();
+      params.append('ordenacao', ordenacao);
+      params.append('limite', '12');
+      
+      if (categoriaAtiva) params.append('categoria_id', categoriaAtiva);
+      if (tabAtiva === 'troca') params.append('aceita_troca', 'true');
+      if (tabAtiva === 'novos') params.append('estado_conservacao', 'novo');
+      
+      // Adiciona termo de busca se existir na URL
+      const buscaUrl = searchParams.get('busca');
+      if (buscaUrl) params.append('busca', buscaUrl);
+      
+      const res = await fetch(`${API_URL}/anuncios?${params}`);
+      const data = await res.json();
+      
+      setAnuncios(data.anuncios || []);
+    } catch (erro) {
+      console.error('Erro ao buscar anúncios:', erro);
+      setAnuncios([]);
+    } finally {
+      setCarregando(false);
+    }
+  };
+  
   const handleLogout = () => {
     localStorage.removeItem('sd_token');
     localStorage.removeItem('sd_usuario');
     setUsuario(null);
     navigate('/');
+  };
+  
+  const handleBuscar = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams(searchParams);
+    
+    if (termoBusca.trim()) {
+      params.set('busca', termoBusca.trim());
+    } else {
+      params.delete('busca');
+    }
+    
+    navigate(`/explorar?${params.toString()}`);
   };
   
   // Toggle checkbox
@@ -75,17 +156,20 @@ const Explorar = () => {
   const limparExtras = () => setExtras([]);
   
   const aplicarFiltros = () => {
-    // TODO: quando conectar com o backend, faz a chamada aqui
-    console.log('Filtros aplicados:', {
-      ordenacao, tabAtiva, precoMin, precoMax,
-      distancia, condicoes, bairros, extras
-    });
+    buscarAnuncios();
+  };
+  
+  const formatarPreco = (valor) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(valor);
   };
 
   return (
     <div className="explorar-wrapper">
       
-      {/* ── Header (mesmo da Home) ── */}
+      {/* ── Header ── */}
       <header className="site-header">
         <div className="nav-top home-nav">
           <Link to="/" className="logo">
@@ -95,12 +179,18 @@ const Explorar = () => {
 
           <div className="search-bar">
             <IconSearch />
-            <input type="text" placeholder="Buscar sofá, bicicleta, livro, notebook..." />
+            <input 
+              type="text" 
+              placeholder="Buscar sofá, bicicleta, livro, notebook..." 
+              value={termoBusca}
+              onChange={(e) => setTermoBusca(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleBuscar(e)}
+            />
             <span className="search-location">
               <IconPin />
               Santo Amaro, SP
             </span>
-            <button className="search-btn">Buscar</button>
+            <button className="search-btn" onClick={handleBuscar}>Buscar</button>
           </div>
 
           <nav className="nav-actions">
@@ -142,8 +232,25 @@ const Explorar = () => {
         </div>
 
         <nav className="nav-categories">
-          {['Todos','Móveis & Casa','Eletrônicos','Moda','Infantil & Bebê','Livros','Esporte & Lazer','Arte & Decoração','Ferramentas','Brechó vintage','Trocas 🔄'].map((cat, i) => (
-            <a key={cat} href="#" className={i === 0 ? 'active' : ''}>{cat}</a>
+          <a 
+            href="#" 
+            className={!categoriaAtiva ? 'active' : ''}
+            onClick={(e) => { e.preventDefault(); setCategoriaAtiva(null); }}
+          >
+            Todos
+          </a>
+          {categorias.map((cat) => (
+            <a 
+              key={cat.id} 
+              href="#"
+              className={categoriaAtiva === cat.id ? 'active' : ''}
+              onClick={(e) => {
+                e.preventDefault();
+                setCategoriaAtiva(cat.id);
+              }}
+            >
+              {cat.icone} {cat.nome}
+            </a>
           ))}
         </nav>
       </header>
@@ -163,7 +270,9 @@ const Explorar = () => {
           <div className="explorar-header-top">
             <div>
               <h1>Explorar <em>desapegos</em></h1>
-              <p className="explorar-header-subtitle">0 anúncios encontrados em Santo Amaro</p>
+              <p className="explorar-header-subtitle">
+                {anuncios.length} {anuncios.length === 1 ? 'anúncio encontrado' : 'anúncios encontrados'} em Santo Amaro
+              </p>
             </div>
             
             <div className="explorar-sort">
@@ -172,7 +281,6 @@ const Explorar = () => {
                 <option value="recentes">Mais recentes</option>
                 <option value="preco-menor">Menor preço</option>
                 <option value="preco-maior">Maior preço</option>
-                <option value="distancia">Mais próximos</option>
               </select>
             </div>
           </div>
@@ -183,25 +291,25 @@ const Explorar = () => {
               className={`explorar-tab ${tabAtiva === 'todos' ? 'active' : ''}`}
               onClick={() => setTabAtiva('todos')}
             >
-              Todos <span className="count">0</span>
+              Todos <span className="count">{anuncios.length}</span>
             </button>
             <button
               className={`explorar-tab ${tabAtiva === 'disponiveis' ? 'active' : ''}`}
               onClick={() => setTabAtiva('disponiveis')}
             >
-              Disponíveis <span className="count">0</span>
+              Disponíveis <span className="count">{anuncios.filter(a => a.status === 'ativo').length}</span>
             </button>
             <button
               className={`explorar-tab ${tabAtiva === 'troca' ? 'active' : ''}`}
               onClick={() => setTabAtiva('troca')}
             >
-              Aceita Troca <span className="count">0</span>
+              Aceita Troca <span className="count">{anuncios.filter(a => a.aceita_troca).length}</span>
             </button>
             <button
               className={`explorar-tab ${tabAtiva === 'novos' ? 'active' : ''}`}
               onClick={() => setTabAtiva('novos')}
             >
-              Novos <span className="count">0</span>
+              Novos <span className="count">{anuncios.filter(a => a.estado_conservacao === 'novo').length}</span>
             </button>
             <button
               className={`explorar-tab ${tabAtiva === 'perto' ? 'active' : ''}`}
@@ -267,10 +375,10 @@ const Explorar = () => {
               </div>
               <div className="filter-checkboxes">
                 {[
-                  { value: 'novo', label: 'Novo / Na caixa', count: 0 },
-                  { value: 'otimo', label: 'Ótimo estado', count: 0 },
-                  { value: 'bom', label: 'Bom estado', count: 0 },
-                  { value: 'marcas', label: 'Com marcas de uso', count: 0 },
+                  { value: 'novo', label: 'Novo / Na caixa' },
+                  { value: 'seminovo', label: 'Seminovo' },
+                  { value: 'usado', label: 'Usado' },
+                  { value: 'para-reparo', label: 'Para reparo' },
                 ].map((c) => (
                   <div key={c.value} className="filter-checkbox">
                     <input
@@ -281,67 +389,7 @@ const Explorar = () => {
                     />
                     <label htmlFor={`cond-${c.value}`}>
                       {c.label}
-                      <span className="count">{c.count}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bairros */}
-            <div className="filter-section">
-              <div className="filter-section-title">
-                <h3>Bairros</h3>
-                <button className="filter-clear" onClick={limparBairros}>Limpar</button>
-              </div>
-              <div className="filter-checkboxes">
-                {[
-                  { value: 'santo-amaro', label: 'Santo Amaro Centro', count: 0 },
-                  { value: 'campo-belo', label: 'Campo Belo', count: 0 },
-                  { value: 'brooklin', label: 'Brooklin', count: 0 },
-                  { value: 'vila-mascote', label: 'Vila Mascote', count: 0 },
-                  { value: 'granja-julieta', label: 'Granja Julieta', count: 0 },
-                  { value: 'vila-sofia', label: 'Vila Sofia', count: 0 },
-                ].map((b) => (
-                  <div key={b.value} className="filter-checkbox">
-                    <input
-                      type="checkbox"
-                      id={`bairro-${b.value}`}
-                      checked={bairros.includes(b.value)}
-                      onChange={() => toggleCheckbox(bairros, setBairros, b.value)}
-                    />
-                    <label htmlFor={`bairro-${b.value}`}>
-                      {b.label}
-                      <span className="count">{b.count}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Extras */}
-            <div className="filter-section">
-              <div className="filter-section-title">
-                <h3>Extras</h3>
-                <button className="filter-clear" onClick={limparExtras}>Limpar</button>
-              </div>
-              <div className="filter-checkboxes">
-                {[
-                  { value: 'troca', label: 'Aceita troca', count: 0 },
-                  { value: 'entrega', label: 'Com entrega', count: 0 },
-                  { value: 'verificado', label: 'Vendedor verificado', count: 0 },
-                  { value: 'hoje', label: 'Anunciado hoje', count: 0 },
-                ].map((e) => (
-                  <div key={e.value} className="filter-checkbox">
-                    <input
-                      type="checkbox"
-                      id={`extra-${e.value}`}
-                      checked={extras.includes(e.value)}
-                      onChange={() => toggleCheckbox(extras, setExtras, e.value)}
-                    />
-                    <label htmlFor={`extra-${e.value}`}>
-                      {e.label}
-                      <span className="count">{e.count}</span>
+                      <span className="count">{anuncios.filter(a => a.estado_conservacao === c.value).length}</span>
                     </label>
                   </div>
                 ))}
@@ -356,23 +404,56 @@ const Explorar = () => {
           {/* ── Grid de produtos ── */}
           <div className="explorar-content">
             <div className="explorar-results-count">
-              Mostrando 1–0 de 0 anúncios
+              Mostrando 1–{anuncios.length} de {anuncios.length} anúncios
             </div>
 
-            <div className="explorar-grid">
-              {/* Estado vazio */}
-              <div className="explorar-empty">
-                <div className="explorar-empty-icon">📦</div>
-                <h3>Nenhum anúncio por aqui ainda</h3>
-                <p>
-                  Seja o primeiro a anunciar! Publique seu desapego e comece a 
-                  movimentar a economia local de Santo Amaro.
-                </p>
-                <Link to={usuario ? '/anunciar' : '/cadastro'}>
-                  {usuario ? '+ Criar meu primeiro anúncio' : '+ Cadastre-se para anunciar'}
-                </Link>
+            {carregando ? (
+              <div className="explorar-loading">Carregando...</div>
+            ) : anuncios.length > 0 ? (
+              <div className="explorar-grid">
+                {anuncios.map((anuncio) => (
+                  <div key={anuncio.id} className="product-card">
+                    <div className="product-image">
+                      {anuncio.imagem_principal ? (
+                        <img src={anuncio.imagem_principal} alt={anuncio.titulo} />
+                      ) : (
+                        <div style={{
+                          width: '100%', height: '100%', background: 'var(--gray-2)',
+                          display: 'grid', placeItems: 'center', color: 'var(--ink-muted)',
+                          fontSize: '3rem'
+                        }}>📦</div>
+                      )}
+                      {anuncio.aceita_troca && (
+                        <span className="product-badge">🔄 Aceita troca</span>
+                      )}
+                    </div>
+                    <div className="product-info">
+                      <h3 className="product-title">{anuncio.titulo}</h3>
+                      <p className="product-price">{formatarPreco(anuncio.preco)}</p>
+                      <p className="product-location">{anuncio.bairro || 'Santo Amaro'}</p>
+                      <div className="product-meta">
+                        <span className="product-condition">{anuncio.estado_conservacao}</span>
+                        <span className="product-time">Agora</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            ) : (
+              <div className="explorar-grid">
+                <div className="explorar-empty">
+                  <div className="explorar-empty-icon">📦</div>
+                  <h3>Nenhum anúncio por aqui ainda</h3>
+                  <p>
+                    Seja o primeiro a anunciar! Publique seu desapego e comece a 
+                    movimentar a economia local de Santo Amaro.
+                  </p>
+                  <Link to={usuario ? '/anunciar' : '/cadastro'}>
+                    {usuario ? '+ Criar meu primeiro anúncio' : '+ Cadastre-se para anunciar'}
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
