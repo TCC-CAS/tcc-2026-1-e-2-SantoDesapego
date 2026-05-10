@@ -5,14 +5,14 @@ import Mapa from '../componentes/Mapa';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
 const CATEGORIES = [
-  { icon: '🛋️', name: 'Móveis & Casa',    count: '412 itens',  bg: '#F7D7CB' },
-  { icon: '💻', name: 'Eletrônicos',       count: '289 itens',  bg: '#D0DFD6' },
-  { icon: '👗', name: 'Moda',              count: '631 itens',  bg: '#FCE5B6' },
-  { icon: '🧸', name: 'Infantil & Bebê',   count: '198 itens',  bg: '#E5D5EB' },
-  { icon: '📚', name: 'Livros',            count: '543 itens',  bg: '#FCD3C1' },
-  { icon: '🚴', name: 'Esporte & Lazer',   count: '177 itens',  bg: '#C9DDE8' },
-  { icon: '🎨', name: 'Arte & Decoração',  count: '224 itens',  bg: '#E8DCC4' },
-  { icon: '🔧', name: 'Ferramentas',       count: '96 itens',   bg: '#E1D1C0' },
+  { id: 1, icon: '🛋️', name: 'Móveis & Casa',    bg: '#F7D7CB' },
+  { id: 2, icon: '💻', name: 'Eletrônicos',       bg: '#D0DFD6' },
+  { id: 3, icon: '👗', name: 'Moda',              bg: '#FCE5B6' },
+  { id: 4, icon: '🧸', name: 'Infantil & Bebê',   bg: '#E5D5EB' },
+  { id: 5, icon: '📚', name: 'Livros',            bg: '#FCD3C1' },
+  { id: 6, icon: '🚴', name: 'Esporte & Lazer',   bg: '#C9DDE8' },
+  { id: 7, icon: '🎨', name: 'Arte & Decoração',  bg: '#E8DCC4' },
+  { id: 8, icon: '🔧', name: 'Ferramentas',       bg: '#E1D1C0' },
 ];
 
 const FILTER_CHIPS = ['Todos', 'Mais recentes', 'Aceita troca', 'Abaixo de R$100', 'Perto de mim'];
@@ -119,11 +119,32 @@ const STEPS = [
   },
 ];
 
+/* ── Pilares do Santo Desapego ─────────────────────────────── */
 const IMPACT_CARDS = [
-  { num: '2,4t',    lbl: 'de itens evitados do descarte em 2025' },
-  { num: 'R$ 420k', lbl: 'movimentados na economia local' },
-  { num: '18mil',   lbl: 'conexões entre vizinhos criadas' },
-  { num: '93%',     lbl: 'dos usuários voltam a anunciar em 30 dias' },
+  {
+    num: '01',
+    title: 'Hiperlocal',
+    desc: 'Cadastros validados por CEP. Anúncios e transações acontecem 100% dentro do distrito de Santo Amaro.',
+    accent: 'terracotta',
+  },
+  {
+    num: '02',
+    title: 'Circular',
+    desc: 'Cada item ganha uma nova história em vez de virar descarte. Menos lixo no aterro, menos produção nova.',
+    accent: 'forest',
+  },
+  {
+    num: '03',
+    title: 'Comunidade',
+    desc: 'Conexões reais entre quem mora perto. A reputação do vizinho se constrói anúncio a anúncio.',
+    accent: 'mustard',
+  },
+  {
+    num: '04',
+    title: 'Consciente',
+    desc: 'Preço justo e ciclo de vida prolongado. Um modelo pensado para um consumo mais responsável.',
+    accent: 'ink',
+  },
 ];
 
 const HOODS = [
@@ -149,7 +170,7 @@ const FOOTER_LINKS = [
 
 const HERO_CARDS = [
   { img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80', price: 'R$ 480',  hood: 'Sofá • Jardim Marajoara',      cls: 'hero-card-1' },
-  { img: 'https://images.unsplash.com/photo-1511556820780-d912e42b4980?w=400&q=80', price: 'R$ 120',  hood: 'Bicicleta infantil • Campo Belo', cls: 'hero-card-2' },
+  { img: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=400&q=80', price: 'R$ 120',  hood: 'Bicicleta • Campo Belo', cls: 'hero-card-2' },
   { img: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=80', price: 'R$ 35',   hood: 'Livros • Vila Cruzeiro',          cls: 'hero-card-3' },
   { img: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80', price: 'R$ 220',  hood: 'Tênis • Vila Mascote',            cls: 'hero-card-4' },
 ];
@@ -191,6 +212,8 @@ const Home = () => {
   const [activeFilter, setActiveFilter] = useState('Todos');
   const [favorites, setFavorites] = useState(new Set());
   const [termoBusca, setTermoBusca] = useState('');
+  const [anunciosReais, setAnunciosReais] = useState([]);
+  const [carregandoAnuncios, setCarregandoAnuncios] = useState(true);
 
   // ── Estado do usuário logado (lê do localStorage)
   const [usuario, setUsuario] = useState(null);
@@ -206,6 +229,24 @@ const Home = () => {
         localStorage.removeItem('sd_token');
       }
     }
+  }, []);
+
+  // Buscar anúncios reais da API
+  useEffect(() => {
+    const buscarAnuncios = async () => {
+      try {
+        const res = await fetch('http://localhost:8080/api/anuncios?limite=8&ordenacao=recentes');
+        const data = await res.json();
+        setAnunciosReais(data.anuncios || []);
+      } catch (erro) {
+        console.error('Erro ao buscar anúncios:', erro);
+        setAnunciosReais([]);
+      } finally {
+        setCarregandoAnuncios(false);
+      }
+    };
+    
+    buscarAnuncios();
   }, []);
 
   const handleLogout = () => {
@@ -397,7 +438,6 @@ const Home = () => {
               <div className="hood">{c.hood}</div>
             </div>
           ))}
-          <div className="hero-sticker">frete grátis<br />até 3km!</div>
         </div>
       </section>
 
@@ -416,11 +456,14 @@ const Home = () => {
 
           <div className="cat-grid">
             {CATEGORIES.map((c) => (
-              <div key={c.name} className="cat-card">
+              <Link 
+                key={c.name} 
+                to={`/explorar?categoria_id=${c.id}`} 
+                className="cat-card"
+              >
                 <div className="cat-icon" style={{ background: c.bg }}>{c.icon}</div>
                 <div className="name">{c.name}</div>
-                <div className="count">{c.count}</div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -433,62 +476,70 @@ const Home = () => {
         <div className="section">
           <div className="section-head">
             <div>
-              <h2>Desapegos <em>fresquinhos</em></h2>
-              <p>Anunciados nas últimas 24 horas pelos seus vizinhos.</p>
+              <h2>Veja o que você <em>pode encontrar</em></h2>
+              <p>Anúncios recentes em Santo Amaro.</p>
             </div>
-            <Link to="/explorar" className="head-link">Ver todos →</Link>
+            {anunciosReais.length > 0 && (
+              <Link to="/explorar" className="head-link">Ver todos →</Link>
+            )}
           </div>
 
-          {/* Filter chips */}
-          <div className="filter-bar">
-            {FILTER_CHIPS.map((chip) => (
-              <button
-                key={chip}
-                className={`filter-chip${activeFilter === chip ? ' active' : ''}`}
-                onClick={() => setActiveFilter(chip)}
-              >
-                {chip}
-              </button>
-            ))}
-          </div>
+          {/* LOADING */}
+          {carregandoAnuncios && (
+            <div className="products-loading">
+              <p>Buscando anúncios...</p>
+            </div>
+          )}
 
-          {/* Grid de produtos */}
-          <div className="products-grid">
-            {PRODUCTS.map((p) => (
-              <article key={p.id} className="product">
-                <div className="product-img">
-                  <img src={p.img} alt={p.title} loading="lazy" />
-                  {p.badge && (
-                    <span className={`product-badge${p.badge.type ? ' ' + p.badge.type : ''}`}>
-                      {p.badge.label}
-                    </span>
-                  )}
-                  <button
-                    className={`product-fav${favorites.has(p.id) ? ' favorited' : ''}`}
-                    onClick={() => toggleFav(p.id)}
-                    aria-label="Favoritar"
-                  >
-                    <IconHeart />
-                  </button>
-                </div>
-                <div className="product-body">
-                  <div className="product-cat">{p.cat}</div>
-                  <h3 className="product-title">{p.title}</h3>
-                  <div className="product-price">
-                    {p.price}
-                    {p.priceOld && <small>{p.priceOld}</small>}
+          {/* GRID COM ANÚNCIOS REAIS */}
+          {!carregandoAnuncios && anunciosReais.length > 0 && (
+            <div className="products-grid">
+              {anunciosReais.map((p) => (
+                <article key={p.id} className="product">
+                  <div className="product-img">
+                    <img 
+                      src={p.imagem_principal || 'https://via.placeholder.com/400x400?text=Sem+imagem'} 
+                      alt={p.titulo} 
+                      loading="lazy" 
+                    />
+                    <button
+                      className={`product-fav${favorites.has(p.id) ? ' favorited' : ''}`}
+                      onClick={() => toggleFav(p.id)}
+                      aria-label="Favoritar"
+                    >
+                      <IconHeart />
+                    </button>
                   </div>
-                  <div className="product-meta">
-                    <div className="seller">
-                      <div className="seller-avatar">{p.seller[0]}</div>
-                      <span>{p.seller}</span>
+                  <div className="product-body">
+                    <div className="product-cat">{p.categoria_nome}</div>
+                    <h3 className="product-title">{p.titulo}</h3>
+                    <div className="product-price">
+                      R$ {parseFloat(p.preco || 0).toFixed(2)}
                     </div>
-                    <span>{p.hood}</span>
+                    <div className="product-meta">
+                      <div className="seller">
+                        <div className="seller-avatar">{p.vendedor_nome?.[0] || '?'}</div>
+                        <span>{p.vendedor_nome || 'Anônimo'}</span>
+                      </div>
+                      <span>{p.bairro || 'Santo Amaro'}</span>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
-          </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {/* CTA QUANDO NÃO TEM ANÚNCIOS */}
+          {!carregandoAnuncios && anunciosReais.length === 0 && (
+            <div className="empty-state">
+              <div className="empty-icon">📦</div>
+              <h3>Ainda não há anúncios em Santo Amaro</h3>
+              <p>Seja o primeiro a desapegar e ajude a construir<br />a economia circular do bairro!</p>
+              <Link to="/anunciar" className="btn-home-primary">
+                + Criar meu primeiro anúncio
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -517,27 +568,33 @@ const Home = () => {
       </section>
 
       {/* ══════════════════════════════════
-          IMPACTO / ODS 12
+          NOSSOS PILARES
           ══════════════════════════════════ */}
       <section className="impact-section">
         <div className="impact-wrap">
           <div className="impact-text">
-            <span className="badge-ods">🎯 ODS 12 • Consumo responsável</span>
+            <span className="badge-ods">Nossos pilares</span>
             <h2>Cada desapego é uma <em>pequena revolução</em> circular.</h2>
             <p>
-              O Santo Desapego reinsere ativos subutilizados na cadeia produtiva local,
-              reduzindo o descarte e fortalecendo a economia do distrito. Os números
-              crescem junto com a comunidade.
+              Mais que um marketplace, o Santo Desapego propõe um modelo de
+              economia circular hiperlocal alinhado aos Objetivos de
+              Desenvolvimento Sustentável da ONU — combinando sustentabilidade
+              ambiental, vínculo comunitário e fortalecimento da economia
+              do bairro.
             </p>
-            <a href="#" className="btn-ghost">Conheça o impacto →</a>
+            <a href="#como-funciona" className="btn-ghost">Ver como funciona →</a>
           </div>
 
           <div className="impact-grid">
             {IMPACT_CARDS.map((c) => (
-              <div key={c.num} className="impact-card">
-                <div className="impact-num">{c.num}</div>
-                <div className="impact-lbl">{c.lbl}</div>
-              </div>
+              <article
+                key={c.num}
+                className={`impact-card impact-card--${c.accent}`}
+              >
+                <span className="impact-card-num">{c.num}</span>
+                <h3 className="impact-card-title">{c.title}</h3>
+                <p className="impact-card-desc">{c.desc}</p>
+              </article>
             ))}
           </div>
         </div>

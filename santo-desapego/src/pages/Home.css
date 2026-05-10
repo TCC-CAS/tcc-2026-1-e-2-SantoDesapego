@@ -131,7 +131,7 @@
 .trust-item .lbl { font-size: 0.82rem; color: var(--ink-muted); margin-top: 0.3rem; }
 
 /* Hero visual — collage de cards */
-.hero-visual { position: relative; height: 520px; }
+.hero-visual { position: relative; height: 650px; min-height: 650px; }
 
 .hero-card {
   position: absolute;
@@ -147,35 +147,10 @@
 .hero-card .price { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--ink); }
 .hero-card .hood  { font-size: 0.75rem; color: var(--ink-muted); margin-top: 0.15rem; }
 
-.hero-card-1 { width: 200px; top: 0;    left: 0;    transform: rotate(-4deg); z-index: 2; }
-.hero-card-2 { width: 220px; top: 60px; right: 20px; transform: rotate(3deg);  z-index: 3; }
-.hero-card-3 { width: 180px; bottom: 40px; left: 80px; transform: rotate(5deg); z-index: 4; }
-.hero-card-4 { width: 170px; bottom: 0;  right: 60px; transform: rotate(-6deg); z-index: 1; }
-
-.hero-sticker {
-  position: absolute;
-  background: var(--mustard);
-  color: var(--ink);
-  width: 110px; height: 110px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.88rem;
-  line-height: 1.1;
-  padding: 1rem;
-  top: 40%; right: -10px;
-  z-index: 10;
-  transform: rotate(-15deg);
-  box-shadow: 0 4px 16px rgba(228, 160, 32, 0.4);
-  animation: wobble 6s ease-in-out infinite;
-}
-@keyframes wobble {
-  0%, 100% { transform: rotate(-15deg); }
-  50%       { transform: rotate(-8deg); }
-}
+.hero-card-1 { width: 210px; top: 50px;    left: 30px;    transform: rotate(-4deg); z-index: 2; }
+.hero-card-2 { width: 230px; top: 10px; right: 60px; transform: rotate(3deg);  z-index: 3; }
+.hero-card-3 { width: 190px; bottom: 60px; left: 160px; transform: rotate(5deg); z-index: 1; }
+.hero-card-4 { width: 180px; bottom: 140px;  right: 80px; transform: rotate(-6deg); z-index: 4; }
 
 /* ==========================================================
    SEÇÃO — utilitários compartilhados entre seções
@@ -230,6 +205,8 @@
   text-align: center;
   transition: border-color 0.2s, transform 0.2s, background 0.2s;
   cursor: pointer;
+  text-decoration: none;
+  display: block;
 }
 .cat-card:hover { border-color: var(--terracotta); transform: translateY(-3px); background: var(--cream-soft); }
 .cat-icon { width: 52px; height: 52px; margin: 0 auto 0.8rem; border-radius: 14px; display: grid; place-items: center; font-size: 1.6rem; }
@@ -305,6 +282,62 @@
 .seller { display: flex; align-items: center; gap: 0.5rem; }
 .seller-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--mustard); color: var(--ink); display: grid; place-items: center; font-size: 0.72rem; font-weight: 700; }
 
+/* Empty state — quando não tem anúncios */
+.empty-state {
+  text-align: center;
+  padding: 5rem 2rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+.empty-state h3 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 1rem;
+}
+.empty-state p {
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  margin-bottom: 2.5rem;
+  line-height: 1.6;
+}
+.empty-state .btn-home-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  background: var(--terracotta);
+  color: var(--cream);
+  border: none;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(191, 85, 64, 0.25);
+  margin-top: 0.5rem;
+}
+.empty-state .btn-home-primary:hover {
+  background: var(--forest);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(191, 85, 64, 0.35);
+}
+
+/* Loading state */
+.products-loading {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+}
+
 /* ==========================================================
    COMO FUNCIONA
    ========================================================== */
@@ -328,36 +361,165 @@
 .step p   { color: rgba(244, 239, 228, 0.75); font-size: 0.95rem; }
 
 /* ==========================================================
-   IMPACTO / ODS 12
+   PILARES (ex-IMPACTO/ODS) — versão editorial clean
+   Cards claros sobre cream-soft, número itálico em accent
    ========================================================== */
-.impact-section { position: relative; overflow: hidden; }
-.impact-wrap {
-  max-width: 1280px; margin: 0 auto; padding: 5rem 2rem;
-  display: grid; grid-template-columns: 1fr 1.2fr; gap: 4rem; align-items: center;
+.impact-section {
+  background: var(--cream-soft);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
 }
-.badge-ods {
-  display: inline-flex; align-items: center; gap: 0.6rem;
-  background: var(--mustard); color: var(--ink);
-  padding: 0.5rem 1rem; border-radius: var(--radius-pill);
-  font-weight: 700; font-size: 0.82rem; margin-bottom: 1.5rem;
+/* Marca d'água tipográfica no fundo, super sutil — vibe editorial */
+.impact-section::before {
+  content: "circular.";
+  position: absolute;
+  top: 50%;
+  right: -2rem;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-style: italic;
+  font-size: clamp(8rem, 18vw, 16rem);
+  color: var(--ink);
+  opacity: 0.025;
+  letter-spacing: -0.05em;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
 }
-.impact-text h2 { font-family: var(--font-display); font-weight: 700; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.02em; line-height: 1.08; margin-bottom: 1.5rem; }
-.impact-text h2 em { font-style: italic; color: var(--terracotta); font-weight: 400; }
-.impact-text p { color: var(--ink-soft); font-size: 1.05rem; margin-bottom: 2rem; }
 
-.impact-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; }
-.impact-card { background: var(--paper); border: 1.5px solid var(--border); border-radius: 20px; padding: 2rem 1.5rem; }
-.impact-card:nth-child(1) { background: var(--terracotta); color: var(--cream); border-color: var(--terracotta); }
-.impact-card:nth-child(2) { background: var(--forest); color: var(--cream); border-color: var(--forest); }
-.impact-card:nth-child(3) { background: var(--mustard); border-color: var(--mustard); }
-.impact-card:nth-child(4) { background: var(--cream-soft); }
-.impact-num { font-family: var(--font-display); font-weight: 900; font-size: 3rem; line-height: 1; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
-.impact-lbl { font-size: 0.9rem; font-weight: 500; line-height: 1.3; opacity: 0.85; }
+.impact-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 5rem 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.badge-ods {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 0.78rem;
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.badge-ods::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--terracotta);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.impact-text h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin-bottom: 1.5rem;
+  color: var(--ink);
+}
+.impact-text h2 em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+.impact-text p { color: var(--ink-soft); font-size: 1.02rem; margin-bottom: 2rem; line-height: 1.65; }
+
+/* Grid 2x2 dos cards */
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+/* Cards refinados — claros, com accent variável */
+.impact-card {
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 1.8rem 1.6rem 1.6rem;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+  transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+/* Linha vertical fina à esquerda na cor de accent — detalhe editorial */
+.impact-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1.8rem;
+  bottom: 1.6rem;
+  width: 3px;
+  background: var(--card-accent, var(--terracotta));
+  border-radius: 0 3px 3px 0;
+  opacity: 0.85;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  transform-origin: top;
+}
+.impact-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--card-accent, var(--terracotta));
+  box-shadow: 0 14px 32px rgba(0,0,0,0.06);
+}
+.impact-card:hover::before {
+  opacity: 1;
+  transform: scaleY(1.05);
+}
+
+/* Variantes de accent por card */
+.impact-card--terracotta { --card-accent: var(--terracotta); }
+.impact-card--forest     { --card-accent: var(--forest); }
+.impact-card--mustard    { --card-accent: var(--mustard); }
+.impact-card--ink        { --card-accent: var(--ink); }
+
+.impact-card-num {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 2.6rem;
+  line-height: 1;
+  color: var(--card-accent, var(--terracotta));
+  margin-bottom: 1.2rem;
+  letter-spacing: -0.02em;
+}
+
+.impact-card-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0 0 0.6rem;
+}
+
+.impact-card-desc {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 0;
+}
 
 /* ==========================================================
    LOCAL — SANTO AMARO
    ========================================================== */
-.local-section { background: var(--cream-soft); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.local-section { background: var(--paper); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .local-wrap { max-width: 1280px; margin: 0 auto; padding: 5rem 2rem; display: grid; grid-template-columns: 1.2fr 1fr; gap: 4rem; align-items: center; }
 
 .local-map { aspect-ratio: 4/3; background: var(--paper); border: 1.5px solid var(--border); border-radius: 24px; position: relative; overflow: hidden; padding: 2rem; }
@@ -386,7 +548,7 @@
 .local-text p  { color: var(--ink-soft); margin-bottom: 1.5rem; font-size: 1.02rem; }
 
 .local-hoods { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
-.hood-tag { background: var(--paper); border: 1px solid var(--border); padding: 0.4rem 0.9rem; border-radius: var(--radius-pill); font-size: 0.82rem; color: var(--ink-soft); }
+.hood-tag { background: var(--cream-soft); border: 1px solid var(--border); padding: 0.4rem 0.9rem; border-radius: var(--radius-pill); font-size: 0.82rem; color: var(--ink-soft); }
 
 /* ==========================================================
    CTA
