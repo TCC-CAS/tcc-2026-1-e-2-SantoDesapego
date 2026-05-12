@@ -338,9 +338,7 @@
   font-size: 1.05rem;
 }
 
-/* ==========================================================
-   COMO FUNCIONA
-   ========================================================== */
+
 .how-section { background: var(--forest); color: var(--cream); }
 .how-section .section { padding-top: 5rem; padding-bottom: 5rem; }
 .how-section .section-head h2 { color: var(--cream); }
@@ -360,10 +358,7 @@
 .step h3  { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; margin-bottom: 0.8rem; color: var(--cream); }
 .step p   { color: rgba(244, 239, 228, 0.75); font-size: 0.95rem; }
 
-/* ==========================================================
-   PILARES (ex-IMPACTO/ODS) — versão editorial clean
-   Cards claros sobre cream-soft, número itálico em accent
-   ========================================================== */
+
 .impact-section {
   background: var(--cream-soft);
   border-top: 1px solid var(--border);

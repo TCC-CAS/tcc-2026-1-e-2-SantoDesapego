@@ -5,7 +5,6 @@ import './Login.css';
 
 const API_URL = 'http://localhost:8080';
 
-// ⚠️ Mesmo Client ID configurado no Google Cloud Console
 const GOOGLE_CLIENT_ID = '113184048014-ramhhojnofdd511oh1nl3h2ibono7581.apps.googleusercontent.com';
 
 // ============================================================
