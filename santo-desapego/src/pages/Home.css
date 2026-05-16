@@ -579,8 +579,63 @@
 .footer-col a  { display: block; color: var(--ink-soft); font-size: 0.88rem; padding: 0.25rem 0; transition: color 0.15s; }
 .footer-col a:hover { color: var(--terracotta); }
 
-.footer-tcc { max-width: 1280px; margin: 0 auto; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: 0.8rem; color: var(--ink-muted); }
+/* ── Rodapé acadêmico (TCC) ─────────────────────────────── */
+.footer-tcc {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
 .footer-tcc strong { color: var(--ink); }
+
+.footer-tcc-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  width: 100%;
+}
+
+/* ── Licença Creative Commons ───────────────────────────── */
+.cc-license {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  line-height: 1.7;
+  padding-top: 0.8rem;
+  border-top: 1px dashed var(--border);
+  width: 100%;
+}
+
+.cc-license a,
+.cc-license .cc-authors {
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 2px;
+  transition: color 0.2s, text-decoration-color 0.2s;
+}
+
+.cc-license a:hover {
+  color: var(--terracotta);
+  text-decoration-color: var(--terracotta);
+}
+
+.cc-license img {
+  max-width: 1em;
+  max-height: 1em;
+  margin-left: 0.2em;
+  vertical-align: middle;
+}
 
 /* ==========================================================
    CORREÇÃO: Links de categoria no header

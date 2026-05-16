@@ -664,10 +664,29 @@ const Home = () => {
         </div>
 
         <div className="footer-tcc">
-          <div>
-            <strong>Projeto acadêmico</strong> — Trabalho de Conclusão de Curso • Bacharelado em Sistemas de Informação • Centro Universitário Senac Santo Amaro
+          <div className="footer-tcc-info">
+            <div>
+              <strong>Projeto acadêmico</strong> — Trabalho de Conclusão de Curso • Bacharelado em Sistemas de Informação • Centro Universitário Senac Santo Amaro
+            </div>
+            <div>Luisa Aquino • Maria Erica Cruz • Paulo Santana</div>
           </div>
-          <div>Luisa Aquino • Maria Erica Cruz • Paulo Santana</div>
+
+          <div className="cc-license">
+            <Link to="/">Santo Desapego</Link> © 2026 by{' '}
+            <span className="cc-authors">Paulo Santana, Maria Erica Cruz e Luisa Nascimento</span>{' '}
+            is licensed under{' '}
+            <a
+              href="https://creativecommons.org/licenses/by-nc-nd/4.0/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              CC BY-NC-ND 4.0
+            </a>
+            <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" alt="CC" />
+            <img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" alt="BY" />
+            <img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" alt="NC" />
+            <img src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" alt="ND" />
+          </div>
         </div>
       </footer>
 
