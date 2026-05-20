@@ -638,42 +638,82 @@
 }
 
 /* ==========================================================
-   CORREÇÃO: Links de categoria no header
+   NAV CATEGORIAS — versão editorial com line icons
    ========================================================== */
 .nav-categories {
-  flex-wrap: wrap !important;
-  gap: 0.5rem !important;
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem !important;
+  padding: 0.6rem 2rem 0.9rem !important;
+  border-top: 1px solid var(--border-soft);
   overflow-x: visible !important;
-  justify-content: center !important;
-  padding: 1rem 2rem 1.2rem !important;
 }
 
 .nav-categories a {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.65rem 1.2rem;
-  border-radius: var(--radius-pill);
-  font-size: 0.95rem;
-  font-weight: 600;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
   color: var(--ink-soft);
   text-decoration: none;
-  transition: all 0.2s;
+  border: 0;
+  border-radius: 8px;
   white-space: nowrap;
-  border: 1.5px solid transparent;
+  position: relative;
+  transition: color 0.18s ease, background 0.18s ease;
+}
+
+.nav-categories a svg {
+  opacity: 0.55;
+  flex-shrink: 0;
+  transition: opacity 0.18s ease, color 0.18s ease, transform 0.25s ease;
 }
 
 .nav-categories a:hover {
-  background: var(--cream-soft);
   color: var(--ink);
-  border-color: var(--border);
+  background: var(--cream-soft);
+}
+.nav-categories a:hover svg {
+  opacity: 1;
+  color: var(--terracotta);
+  transform: translateY(-1px);
 }
 
+/* Estado ativo — sublinhado terracota, sem pílula */
 .nav-categories a.active {
-  background: var(--cream-soft);
+  color: var(--ink);
+  font-weight: 600;
+  background: transparent;
+}
+.nav-categories a.active svg {
+  opacity: 1;
   color: var(--terracotta);
-  border-color: var(--terracotta);
-  font-weight: 700;
+}
+.nav-categories a.active::after {
+  content: "";
+  position: absolute;
+  left: 0.85rem;
+  right: 0.85rem;
+  bottom: 0.28rem;
+  height: 2px;
+  background: var(--terracotta);
+  border-radius: 1px;
+}
+
+/* Separador entre categorias principais e extras (vintage / trocas) */
+.nav-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 0.5rem;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 /* ==========================================================
@@ -693,7 +733,8 @@
 
 @media (max-width: 600px) {
   .section { padding: 3rem 1.25rem; }
-  .nav-categories { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .nav-categories { padding: 0.5rem 1rem 0.75rem !important; }
+  .nav-sep { display: none; }
   .nav-actions a:not(.btn-sell) { display: none; }
   .search-location { display: none; }
   .hero-trust { flex-wrap: wrap; gap: 1.5rem; }

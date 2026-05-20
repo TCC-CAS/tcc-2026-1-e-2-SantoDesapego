@@ -399,6 +399,86 @@
   cursor: not-allowed;
 }
 
+/* ==========================================================
+   NAV CATEGORIAS — versão editorial com line icons
+   (replicado aqui para a página ser autossuficiente)
+   ========================================================== */
+.nav-categories {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem !important;
+  padding: 0.6rem 2rem 0.9rem !important;
+  border-top: 1px solid var(--border-soft);
+  overflow-x: visible !important;
+}
+
+.nav-categories a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--ink-soft);
+  text-decoration: none;
+  border: 0;
+  border-radius: 8px;
+  white-space: nowrap;
+  position: relative;
+  transition: color 0.18s ease, background 0.18s ease;
+}
+
+.nav-categories a svg {
+  opacity: 0.55;
+  flex-shrink: 0;
+  transition: opacity 0.18s ease, color 0.18s ease, transform 0.25s ease;
+}
+
+.nav-categories a:hover {
+  color: var(--ink);
+  background: var(--cream-soft);
+}
+.nav-categories a:hover svg {
+  opacity: 1;
+  color: var(--terracotta);
+  transform: translateY(-1px);
+}
+
+/* Estado ativo — sublinhado terracota, sem pílula */
+.nav-categories a.active {
+  color: var(--ink);
+  font-weight: 600;
+  background: transparent;
+}
+.nav-categories a.active svg {
+  opacity: 1;
+  color: var(--terracotta);
+}
+.nav-categories a.active::after {
+  content: "";
+  position: absolute;
+  left: 0.85rem;
+  right: 0.85rem;
+  bottom: 0.28rem;
+  height: 2px;
+  background: var(--terracotta);
+  border-radius: 1px;
+}
+
+/* Separador entre categorias principais e extras */
+.nav-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 0.5rem;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
 /* ── Responsivo ─────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .explorar-main {
@@ -431,4 +511,9 @@
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1rem;
   }
+}
+
+@media (max-width: 600px) {
+  .nav-categories { padding: 0.5rem 1rem 0.75rem !important; }
+  .nav-sep { display: none; }
 }
