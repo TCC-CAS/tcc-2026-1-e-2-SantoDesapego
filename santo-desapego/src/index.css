@@ -1,0 +1,308 @@
+:root {
+  /* Paleta */
+  --cream:           #F4EFE4;
+  --cream-soft:      #EAE3D0;
+  --cream-deep:      #DDD3BA;
+  --paper:           #FBF8F1;
+  --terracotta:      #C14B35;
+  --terracotta-dark: #9E3A28;
+  --terracotta-soft: #E8A595;
+  --forest:          #1F4F3F;
+  --forest-soft:     #3A6B5A;
+  --mustard:         #E4A020;
+  --mustard-soft:    #F2C96A;
+  --ink:             #1A1A1A;
+  --ink-soft:        #4A4A4A;
+  --ink-muted:       #7A7A7A;
+  --border:          #D6CFBD;
+  --border-soft:     #E5DFCE;
+  --success:         #2A7D5C;
+  --error:           #C14B35;
+
+  /* Tipografia */
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-display: 'Fraunces', serif;
+
+  /* Raios */
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --radius-pill: 100px;
+}
+
+/* ── Reset ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+a    { color: inherit; text-decoration: none; }
+img  { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+/* ── Announcement bar ───────────────────────────────────── */
+.announcement {
+  background: var(--forest);
+  color: var(--cream);
+  text-align: center;
+  font-size: 0.85rem;
+  padding: 0.6rem 1rem;
+  letter-spacing: 0.02em;
+}
+.announcement strong { color: var(--mustard-soft); }
+
+/* ── Site header ────────────────────────────────────────── */
+.site-header {
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.nav-top {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* ── Logo ───────────────────────────────────────────────── */
+.logo {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.logo-mark {
+  width: 38px;
+  height: 38px;
+  background: var(--terracotta);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--cream);
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: 3px 3px 0 var(--forest);
+  flex-shrink: 0;
+}
+.logo em { font-style: italic; font-weight: 400; color: var(--terracotta); }
+
+/* ── Nav actions ────────────────────────────────────────── */
+.nav-actions { display: flex; align-items: center; gap: 1.5rem; }
+.nav-actions a {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  transition: color 0.2s;
+}
+.nav-actions a:hover { color: var(--terracotta); }
+
+/* ── Botões globais ─────────────────────────────────────── */
+/* Botão CTA da nav (home / listagem) — mantém nome original do JSX */
+.btn-sell,
+.btn-primary {
+  background: var(--terracotta);
+  color: var(--cream) !important;
+  padding: 0.7rem 1.4rem;
+  border-radius: var(--radius-pill);
+  font-weight: 700 !important;
+  font-size: 0.9rem;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.15s, box-shadow 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.btn-sell:hover,
+.btn-primary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+  color: var(--cream) !important;
+}
+
+/* Botão de login — base; Login.css complementa com display:flex, gap etc. */
+.btn-login {
+  width: 100%;
+  background: var(--ink);
+  color: var(--cream);
+  padding: 1rem;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-login:hover  { background: var(--terracotta); }
+.btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Botão escuro (submit / ação principal de formulário) */
+.btn-dark {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 0.9rem 2rem;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 0.98rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  box-shadow: 3px 3px 0 var(--terracotta);
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+.btn-dark:hover {
+  background: var(--terracotta);
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.btn-dark:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+/* ── Search bar (home / listagem) ───────────────────────── */
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 0.5rem 0.5rem 0.5rem 1.3rem;
+  flex: 1;
+  max-width: 500px;
+}
+.search-bar svg   { color: var(--ink-muted); }
+.search-bar input { flex: 1; border: none; background: transparent; padding: 0.5rem 0.8rem; outline: none; }
+.search-location  {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.8rem;
+  border-left: 1px solid var(--border);
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+/* ── Nav categories (home / listagem) ──────────────────── */
+.nav-categories {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0.5rem 2rem 0.8rem;
+  display: flex;
+  gap: 1.8rem;
+  overflow-x: auto;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+.nav-categories a.active { color: var(--ink); font-weight: 700; }
+
+/* ── Layout base das telas de auth (login / cadastro) ──── */
+/* O CSS de cada página sobrescreve o que precisar */
+.auth-split,
+.auth-container {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  width: 100%;
+  flex: 1;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.auth-container { grid-template-columns: 1fr 1fr; }
+
+.auth-visual,
+.auth-left {
+  background: var(--forest);
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: var(--cream);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-form-side,
+.auth-right {
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.login-card,
+.form-wrapper {
+  width: 100%;
+  max-width: 480px;
+}
+.login-card {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 24px;
+  border: 1.5px solid var(--border);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+/* ── Site footer ────────────────────────────────────────── */
+.site-footer {
+  background: var(--ink);
+  padding: 1.1rem 2rem;
+  text-align: center;
+  font-size: 0.78rem;
+  color: rgba(244, 239, 228, 0.45);
+}
+.site-footer a { color: rgba(244, 239, 228, 0.6); margin: 0 0.2rem; }
+.site-footer a:hover { color: var(--cream); }
+
+/* ── Feature items (painéis laterais de auth) ───────────── */
+.feature-list  { display: flex; flex-direction: column; gap: 1.5rem; }
+.feature-item  { display: flex; gap: 1rem; align-items: flex-start; }
+.feature-icon  {
+  width: 36px; height: 36px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  display: grid; place-items: center;
+  flex-shrink: 0;
+}
+.feature-text h4 { font-size: 1rem; margin-bottom: 0.2rem; }
+.feature-text p  { font-size: 0.85rem; color: rgba(244, 239, 228, 0.7); }
+
+/* ── Badge pill (painéis laterais) ─────────────────────── */
+.badge {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ── Animações compartilhadas ───────────────────────────── */
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes spin  { to { transform: rotate(360deg); } }
+@keyframes pop   { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* ── Responsividade base ────────────────────────────────── */
+@media (max-width: 768px) {
+  .nav-top { padding: 0.9rem 1rem; }
+}

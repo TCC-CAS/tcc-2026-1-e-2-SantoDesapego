@@ -1,11 +1,39 @@
-# Desenvolvimento_TCC
-Repositório padrão para inicio do desenvovimento de TCC
+# Santo Desapego - Plataforma de Comércio Local
 
-Ênfase no acompanhamento e desenvolvimento do projeto de TCC 1 (proposta) e 2 (aplicação.
+> **Trabalho de Conclusão de Curso** | Bacharelado em Sistemas de Informação - SENAC
 
-Prezado alunos(as), Tudo bem?
+## 📌 Sobre o Projeto
+O **Santo Desapego** é um Sistema de Intermediação voltado para a economia compartilhada e o comércio local. O projeto visa facilitar a troca, venda e doação de itens entre usuários da mesma comunidade ou região, promovendo o consumo consciente e a circulação de bens parados.
 
-A partir de agora o acompanhamento do desenvolvimento de seu TCC 1 ou 2 será tanto em sala de aula como aqui, com o uso deste recurso. Vocês devem fazer um desenvolvimento contínuo, respeitando as datas das entregas previstas por seu professor.
+## 🎨 Design e Wireframes (Figma)
+O protótipo e os fluxos de usuário podem ser visualizados diretamente no Figma através do link abaixo:
+👉 [Projeto Santo Desapego no Figma](https://www.figma.com/design/dCPBASNwCdMsIpBvmW22EU/TCC---Grupo-11?node-id=13-1633&p=f&t=rXVQKNNMwDPULb80-0)
 
-## Atenção!
-Este arquivo deve ser alterado no decorrer do desenvolvimento de seu TCC.
+## 🎯 Objetivos
+- Facilitar a conexão entre compradores e vendedores locais.
+- Incentivar a economia circular e sustentável.
+- Oferecer uma plataforma segura e intuitiva para intermediação de produtos.
+
+## 💻 Tecnologias Utilizadas
+- **Frontend:** HTML, CSS, JavaScript (React / Vue)
+- **Backend:** Node.js / PHP
+- **Banco de Dados:** MySQL / PostgreSQL 
+- **Versionamento:** Git & GitHub
+
+## 👥 Integrantes do Grupo
+- **Luisa Vitoria Aquino Nascimento**
+- **Maria Erica Joana da Conceição Cruz**
+- **Paulo Henrique Alves Santana**
+
+**Orientador:** Prof. Jose Martinele Alves Silva
+
+## 📁 Estrutura do Repositório
+- `/Documentacao`: Contém os arquivos de texto e entregas acadêmicas (DOCX/PDF).
+- `/src`: Código-fonte da aplicação.
+- `/docs`: Diagramas e manuais de uso.
+
+## 🚀 Como executar o projeto
+*(Em breve, instruções de como rodar o sistema localmente)*
+
+---
+© 2026 - Bacharelado em Sistemas de Informação - Centro Universitário Senac
