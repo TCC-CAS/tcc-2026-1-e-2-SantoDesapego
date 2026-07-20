@@ -279,6 +279,10 @@ const Home = () => {
   const [anunciosReais, setAnunciosReais] = useState([]);
   const [carregandoAnuncios, setCarregandoAnuncios] = useState(true);
 
+  // ── Sugestões de busca (dropdown enquanto digita)
+  const [sugestoes, setSugestoes] = useState([]);
+  const [mostrarSugestoes, setMostrarSugestoes] = useState(false);
+
   // ── Estado do usuário logado (lê do localStorage)
   const [usuario, setUsuario] = useState(null);
 
@@ -313,6 +317,28 @@ const Home = () => {
     buscarAnuncios();
   }, []);
 
+  // Busca sugestões enquanto digita (com debounce de 300ms)
+  useEffect(() => {
+    if (termoBusca.trim().length < 2) {
+      setSugestoes([]);
+      setMostrarSugestoes(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:8080/api/anuncios?busca=${encodeURIComponent(termoBusca.trim())}&limite=5`
+        );
+        const data = await res.json();
+        setSugestoes(data.anuncios || []);
+        setMostrarSugestoes(true);
+      } catch {
+        setSugestoes([]);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [termoBusca]);
+
   const handleLogout = () => {
     localStorage.removeItem('sd_token');
     localStorage.removeItem('sd_usuario');
@@ -322,6 +348,7 @@ const Home = () => {
   
   const handleBuscar = (e) => {
     e.preventDefault();
+    setMostrarSugestoes(false);
     if (termoBusca.trim()) {
       navigate(`/explorar?busca=${encodeURIComponent(termoBusca.trim())}`);
     } else {
@@ -358,24 +385,38 @@ const Home = () => {
 
           <div className="search-bar">
             <IconSearch />
-            <input 
-              type="text" 
-              placeholder="Buscar sofá, bicicleta, livro, notebook..." 
+            <input
+              type="text"
+              placeholder="Buscar sofá, bicicleta, livro, notebook..."
               value={termoBusca}
               onChange={(e) => setTermoBusca(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleBuscar(e)}
+              onKeyDown={(e) => e.key === 'Enter' && handleBuscar(e)}
+              onBlur={() => setTimeout(() => setMostrarSugestoes(false), 150)}
+              onFocus={() => sugestoes.length > 0 && setMostrarSugestoes(true)}
             />
             <span className="search-location">
               <IconPin />
-              Santo Amaro, SP
+              Santo Amaro
             </span>
             <button className="search-btn" onClick={handleBuscar}>Buscar</button>
+
+            {mostrarSugestoes && sugestoes.length > 0 && (
+              <div className="search-suggestions">
+                {sugestoes.map((s) => (
+                  <Link key={s.id} to={`/anuncio/${s.id}`}>
+                    <span>{s.titulo}</span>
+                    <span className="sug-price">R$ {parseFloat(s.preco || 0).toFixed(2)}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ───── Header dinâmico: muda se está logado ───── */}
           <nav className="nav-actions">
             {usuario ? (
               <>
+                <Link to="/sobre">Sobre nós</Link>
                 <Link to="/perfil" style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -427,6 +468,7 @@ const Home = () => {
               </>
             ) : (
               <>
+                <Link to="/sobre">Sobre nós</Link>
                 <Link to="/login">Entrar</Link>
                 <Link to="/cadastro" className="btn-sell">+ Anunciar grátis</Link>
               </>
@@ -434,7 +476,7 @@ const Home = () => {
           </nav>
         </div>
 
-        {/* ── Nav de categorias — versão editorial com line icons ── */}
+        {/* ── Nav de categorias — linha única com scroll horizontal ── */}
         <nav className="nav-categories">
           <Link to="/explorar"><IconGrid /><span>Todos</span></Link>
           <Link to="/explorar?categoria_id=1"><IconSofa /><span>Móveis & Casa</span></Link>
@@ -724,7 +766,11 @@ const Home = () => {
           {FOOTER_LINKS.map((col) => (
             <div key={col.title} className="footer-col">
               <h4>{col.title}</h4>
-              {col.links.map((l) => <a key={l} href="#">{l}</a>)}
+              {col.links.map((l) =>
+                l === 'Nosso impacto'
+                  ? <Link key={l} to="/sobre">Sobre nós</Link>
+                  : <a key={l} href="#">{l}</a>
+              )}
             </div>
           ))}
         </div>
