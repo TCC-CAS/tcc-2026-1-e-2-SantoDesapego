@@ -7,6 +7,7 @@ import Anunciar         from './pages/Anunciar';
 import Explorar         from './pages/Explorar';
 import Sobre            from './pages/Sobre';
 import Anuncio          from './pages/Anuncio';
+import Mensagens        from './pages/Mensagens';
 import CompraRealizada  from './pages/CompraRealizada';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/explorar"          element={<Explorar />}         />
         <Route path="/sobre"             element={<Sobre />}            />
         <Route path="/anuncio/:id"       element={<Anuncio />}          />
+        <Route path="/mensagens"         element={<Mensagens />}        />
         <Route path="/compra-realizada"  element={<CompraRealizada />}  />
       </Routes>
     </BrowserRouter>

@@ -25,22 +25,83 @@ const Anuncio = () => {
 
   useEffect(() => {
     setCarregando(true);
+    setErro('');
+
     fetch(`${API_URL}/api/anuncios/${id}`)
-      .then((r) => r.json())
+      .then(async (res) => {
+        const texto = await res.text();
+
+        if (!res.ok) {
+          throw new Error(
+            res.status === 404
+              ? `O servidor respondeu 404 em /api/anuncios/${id} — essa rota provavelmente não existe no back-end ainda.`
+              : `O servidor respondeu ${res.status}.`
+          );
+        }
+
+        try {
+          return JSON.parse(texto);
+        } catch {
+          throw new Error('O servidor respondeu, mas não em JSON. Confira a rota /api/anuncios/:id.');
+        }
+      })
       .then((dados) => {
-        // aceita { anuncio: {...} } ou o objeto direto
         const item = dados.anuncio || (dados.id ? dados : null);
         if (item) setAnuncio(item);
         else setErro(dados.erro || 'Anúncio não encontrado.');
       })
-      .catch(() => setErro('Erro ao conectar com o servidor.'))
+      .catch((e) => {
+        console.error('[Anuncio]', e);
+        setErro(
+          e.message === 'Failed to fetch'
+            ? 'Não consegui falar com o servidor. Ele está rodando em localhost:8080?'
+            : e.message
+        );
+      })
       .finally(() => setCarregando(false));
   }, [id]);
+
+  const [abrindoChat, setAbrindoChat] = useState(false);
+  const [erroAcao, setErroAcao] = useState('');
 
   const comprar = () => {
     const token = localStorage.getItem('sd_token');
     if (!token) { navigate('/login'); return; }
     navigate('/compra-realizada', { state: { anuncio } });
+  };
+
+  // Abre (ou reaproveita) a conversa com o anunciante e vai para o chat
+  const conversar = async () => {
+    const token = localStorage.getItem('sd_token');
+    if (!token) { navigate('/login'); return; }
+
+    setAbrindoChat(true);
+    setErroAcao('');
+
+    try {
+      const resposta = await fetch(`${API_URL}/api/conversas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ anuncio_id: anuncio.id }),
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        setErroAcao(dados.erro || 'Não foi possível abrir a conversa.');
+        setAbrindoChat(false);
+        return;
+      }
+
+      navigate(`/mensagens?conversa=${dados.conversa.id}`);
+    } catch (e) {
+      console.error('[chat]', e);
+      setErroAcao('Erro ao conectar com o servidor.');
+      setAbrindoChat(false);
+    }
   };
 
   const Header = () => (
@@ -80,7 +141,11 @@ const Anuncio = () => {
   }
 
   // Normaliza campos que podem variar de nome no retorno da API
-  const imagens  = anuncio.imagens?.length ? anuncio.imagens : [null];
+  // as imagens podem vir como string base64 ou como objeto { imagem } / { url }
+  const imagens = (anuncio.imagens?.length
+    ? anuncio.imagens
+    : [anuncio.imagem_principal || null]
+  ).map((img) => (typeof img === 'string' || !img ? img : img.imagem || img.url || null));
   const estado   = ESTADO_LABEL[anuncio.estado_conservacao] || { emoji: '📦', name: anuncio.estado_conservacao || '—' };
   const vendedor = anuncio.usuario?.nome || anuncio.vendedor?.nome || anuncio.usuario_nome || 'Vendedor';
   const categoria = anuncio.categoria?.nome || anuncio.categoria_nome || '';
@@ -145,13 +210,21 @@ const Anuncio = () => {
               <button type="button" className="btn-anuncio-comprar" onClick={comprar}>
                 Comprar agora
               </button>
-              <button type="button" className="btn-anuncio-proposta">
-                Fazer proposta
+              <button
+                type="button"
+                className="btn-anuncio-proposta"
+                onClick={conversar}
+                disabled={abrindoChat}
+              >
+                {abrindoChat ? 'Abrindo conversa...' : '💬 Conversar com o anunciante'}
               </button>
             </div>
 
+            {erroAcao && <p className="anuncio-erro-pagamento">{erroAcao}</p>}
+
             <p className="anuncio-nota">
-              O pagamento fica retido até você confirmar a retirada da peça, aqui mesmo em Santo Amaro.
+              Combine a retirada pelo chat antes de fechar negócio. Nunca pague fora
+              da plataforma.
             </p>
 
             <div className="anuncio-vendedor">
