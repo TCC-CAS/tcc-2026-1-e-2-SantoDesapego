@@ -1,0 +1,353 @@
+/* ============================================================
+   ANUNCIO.CSS — Tela de detalhe do anúncio
+   Usa os mesmos tokens do Anunciar/Explorar:
+   --cream, --cream-soft, --paper, --border, --ink, --ink-soft,
+   --ink-muted, --terracotta, --forest, --mustard,
+   --radius-md, --radius-lg, --radius-pill, --font-display
+   ============================================================ */
+
+.anuncio-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+.anuncio-container {
+  max-width: 1080px;
+  margin: 2rem auto;
+  padding: 0 1.5rem 6rem;
+  width: 100%;
+  flex: 1;
+}
+
+/* ── Trilha ─────────────────────────────────────────────── */
+.anuncio-trilha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+.anuncio-trilha a { color: inherit; text-decoration: none; }
+.anuncio-trilha a:hover { color: var(--terracotta); }
+
+/* ── Grid principal ─────────────────────────────────────── */
+.anuncio-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  gap: 2rem;
+  align-items: start;
+}
+
+/* ── Galeria ────────────────────────────────────────────── */
+.galeria-principal {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  background: var(--cream-soft);
+  overflow: hidden;
+}
+.galeria-principal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.galeria-vazia {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+}
+.galeria-contador {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.galeria-miniaturas {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+.galeria-mini {
+  flex-shrink: 0;
+  width: 76px;
+  height: 76px;
+  padding: 0;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--cream-soft);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.18s, transform 0.15s;
+}
+.galeria-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.galeria-mini:hover { border-color: var(--ink); transform: translateY(-2px); }
+.galeria-mini.ativa { border-color: var(--terracotta); box-shadow: 0 0 0 3px rgba(193, 75, 53, 0.08); }
+
+/* ── Painel de compra ───────────────────────────────────── */
+.anuncio-painel {
+  position: sticky;
+  top: 1.5rem;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+}
+
+.anuncio-categoria {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--forest);
+  margin-bottom: 0.5rem;
+}
+
+.anuncio-titulo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  line-height: 1.15;
+  margin-bottom: 0.6rem;
+}
+
+.anuncio-preco {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.9rem, 4vw, 2.4rem);
+  letter-spacing: -0.03em;
+  color: var(--terracotta);
+  margin-bottom: 1.1rem;
+}
+
+.anuncio-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1.1rem;
+}
+.anuncio-tag {
+  padding: 0.35rem 0.8rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--cream);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+.anuncio-tag.troca {
+  border-color: var(--forest);
+  color: var(--forest);
+  background: rgba(86, 119, 84, 0.08);
+}
+
+.anuncio-local {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+.anuncio-local span {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+/* ── Botões ─────────────────────────────────────────────── */
+.anuncio-acoes {
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.btn-anuncio-comprar {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 0.9rem 1.75rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  display: inline-block;
+  box-shadow: 3px 3px 0 var(--terracotta);
+  transition: all 0.2s;
+}
+.btn-anuncio-comprar:hover {
+  background: var(--terracotta);
+  box-shadow: 5px 5px 0 var(--ink);
+  transform: translate(-1px, -1px);
+}
+
+.btn-anuncio-proposta {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--border);
+  padding: 0.85rem 1.75rem;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+.btn-anuncio-proposta:hover { border-color: var(--ink); background: var(--cream-soft); }
+
+.anuncio-nota {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--ink-muted);
+  margin-bottom: 1.5rem;
+}
+
+/* ── Vendedor ───────────────────────────────────────────── */
+.anuncio-vendedor {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding-top: 1.25rem;
+  border-top: 1px dashed var(--border);
+}
+.vendedor-avatar {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--terracotta);
+  color: var(--cream);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-family: var(--font-display);
+}
+.anuncio-vendedor strong { display: block; font-size: 0.95rem; color: var(--ink); }
+.anuncio-vendedor p { font-size: 0.8rem; color: var(--ink-muted); margin: 0.1rem 0 0; }
+
+/* ── Descrição ──────────────────────────────────────────── */
+.anuncio-descricao {
+  margin-top: 2.5rem;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem 2.5rem;
+}
+.anuncio-descricao h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 0.9rem;
+}
+.anuncio-descricao p {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  margin-bottom: 1.75rem;
+  white-space: pre-line;
+}
+
+.anuncio-ficha { display: grid; gap: 0; margin: 0; }
+.anuncio-ficha > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px dashed var(--border);
+}
+.anuncio-ficha > div:last-child { border-bottom: none; }
+.anuncio-ficha dt {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+}
+.anuncio-ficha dd { margin: 0; font-size: 0.9rem; color: var(--ink); text-align: right; }
+
+/* ── Estados (carregando / erro) ────────────────────────── */
+.anuncio-estado {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 5rem 1.5rem;
+  text-align: center;
+  color: var(--ink-muted);
+}
+.anuncio-estado h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--ink);
+}
+.anuncio-estado .btn-anuncio-comprar { margin-top: 1rem; }
+
+/* ── Barra fixa (mobile) ────────────────────────────────── */
+.anuncio-barra { display: none; }
+
+@media (max-width: 880px) {
+  .anuncio-grid { grid-template-columns: 1fr; }
+  .anuncio-painel { position: static; }
+  .anuncio-descricao { padding: 1.5rem 1.25rem; }
+
+  .anuncio-barra {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.7rem 1rem;
+    background: var(--paper);
+    border-top: 1.5px solid var(--border);
+  }
+  .anuncio-barra span {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    max-width: 40vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .anuncio-barra strong {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--terracotta);
+  }
+  .anuncio-barra .btn-anuncio-comprar { padding: 0.7rem 1.25rem; }
+}
+
+/* ── Acessibilidade ─────────────────────────────────────── */
+.anuncio-wrapper button:focus-visible,
+.anuncio-wrapper a:focus-visible {
+  outline: 2px solid var(--terracotta);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anuncio-wrapper * { transition: none !important; }
+  .btn-anuncio-comprar:hover,
+  .galeria-mini:hover { transform: none; }
+}

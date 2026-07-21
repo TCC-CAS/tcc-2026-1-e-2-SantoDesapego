@@ -455,9 +455,7 @@
 .sobre-academico-text p:last-child { margin-bottom: 0; }
 .sobre-academico-text strong { color: var(--mustard); }
 
-/* ==========================================================
-   MOVIMENTO REDUZIDO
-   ========================================================== */
+
 @media (prefers-reduced-motion: reduce) {
   .sobre-hero h1,
   .sobre-lede { animation: none; }
@@ -468,9 +466,7 @@
   .sobre-valores-grid .impact-card * { transition: none; }
 }
 
-/* ==========================================================
-   RESPONSIVIDADE
-   ========================================================== */
+
 @media (max-width: 1024px) {
   .sobre-nav { grid-template-columns: auto 1fr auto; gap: 1rem !important; }
   .sobre-nav-links { display: none; }

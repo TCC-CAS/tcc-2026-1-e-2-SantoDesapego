@@ -742,6 +742,59 @@ app.get('/api/anuncios', async (req, res) => {
   }
 });
 
+// ============================================================
+//  GET ANÚNCIO POR ID — detalhe (pra tela do anúncio)  ← NOVA
+// ============================================================
+app.get('/api/anuncios/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (isNaN(parseInt(id))) {
+      return res.status(400).json({ erro: 'ID de anúncio inválido.' });
+    }
+
+    const resultado = await pool.query(
+      `SELECT
+         a.id, a.titulo, a.descricao, a.preco, a.aceita_troca,
+         a.estado_conservacao, a.cep, a.bairro, a.status, a.data_criacao,
+         a.categoria_id, a.vendedor_id,
+         c.nome AS categoria_nome,
+         u.nome AS vendedor_nome,
+         u.nome AS usuario_nome,
+         u.sobrenome AS vendedor_sobrenome,
+         u.foto_perfil AS vendedor_foto
+       FROM anuncios a
+       JOIN categorias c ON a.categoria_id = c.id
+       JOIN usuarios   u ON a.vendedor_id  = u.id
+       WHERE a.id = $1`,
+      [id]
+    );
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ erro: 'Anúncio não encontrado.' });
+    }
+
+    const anuncio = resultado.rows[0];
+
+    // Todas as imagens, com a principal primeiro
+    const imagens = await pool.query(
+      `SELECT imagem
+         FROM anuncio_imagens
+        WHERE anuncio_id = $1
+        ORDER BY is_principal DESC, ordem ASC, id ASC`,
+      [id]
+    );
+
+    anuncio.imagens = imagens.rows.map((linha) => linha.imagem);
+
+    return res.json({ anuncio });
+
+  } catch (erro) {
+    console.error('Erro ao buscar anúncio:', erro);
+    return res.status(500).json({ erro: 'Erro ao buscar anúncio.' });
+  }
+});
+
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor do Santo Desapego rodando em http://localhost:${PORT}`);

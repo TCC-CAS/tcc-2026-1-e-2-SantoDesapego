@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import './Explorar.css';
 
@@ -111,7 +111,7 @@ const Explorar = () => {
   const [anuncios, setAnuncios] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [termoBusca, setTermoBusca] = useState('');
-  
+
   // Estados de filtros
   const [ordenacao, setOrdenacao] = useState('recentes');
   const [categoriaAtiva, setCategoriaAtiva] = useState(null);
@@ -120,9 +120,7 @@ const Explorar = () => {
   const [precoMax, setPrecoMax] = useState(5000);
   const [distancia, setDistancia] = useState('qualquer');
   const [condicoes, setCondicoes] = useState([]);
-  const [bairros, setBairros] = useState([]);
-  const [extras, setExtras] = useState([]);
-  
+
   // Lê usuário do localStorage
   useEffect(() => {
     const usuarioSalvo = localStorage.getItem('sd_usuario');
@@ -135,7 +133,7 @@ const Explorar = () => {
       }
     }
   }, []);
-  
+
   // Busca categorias
   useEffect(() => {
     fetch(`${API_URL}/categorias`)
@@ -143,13 +141,13 @@ const Explorar = () => {
       .then(data => setCategorias(data.categorias || []))
       .catch(err => console.error('Erro ao buscar categorias:', err));
   }, []);
-  
+
   // Lê parâmetros da URL quando a página carrega
   useEffect(() => {
     const categoriaUrl = searchParams.get('categoria_id');
     const aceitaTrocaUrl = searchParams.get('aceita_troca');
     const buscaUrl = searchParams.get('busca');
-    
+
     if (categoriaUrl) {
       setCategoriaAtiva(parseInt(categoriaUrl));
     }
@@ -163,30 +161,30 @@ const Explorar = () => {
       setTermoBusca('');
     }
   }, [searchParams]);
-  
+
   // Busca anúncios quando os filtros mudam OU searchParams muda
   useEffect(() => {
     buscarAnuncios();
   }, [ordenacao, categoriaAtiva, tabAtiva, searchParams]);
-  
+
   const buscarAnuncios = async () => {
     setCarregando(true);
     try {
       const params = new URLSearchParams();
       params.append('ordenacao', ordenacao);
       params.append('limite', '12');
-      
+
       if (categoriaAtiva) params.append('categoria_id', categoriaAtiva);
       if (tabAtiva === 'troca') params.append('aceita_troca', 'true');
       if (tabAtiva === 'novos') params.append('estado_conservacao', 'novo');
-      
+
       // Adiciona termo de busca se existir na URL
       const buscaUrl = searchParams.get('busca');
       if (buscaUrl) params.append('busca', buscaUrl);
-      
+
       const res = await fetch(`${API_URL}/anuncios?${params}`);
       const data = await res.json();
-      
+
       setAnuncios(data.anuncios || []);
     } catch (erro) {
       console.error('Erro ao buscar anúncios:', erro);
@@ -195,27 +193,27 @@ const Explorar = () => {
       setCarregando(false);
     }
   };
-  
+
   const handleLogout = () => {
     localStorage.removeItem('sd_token');
     localStorage.removeItem('sd_usuario');
     setUsuario(null);
     navigate('/');
   };
-  
+
   const handleBuscar = (e) => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams);
-    
+
     if (termoBusca.trim()) {
       params.set('busca', termoBusca.trim());
     } else {
       params.delete('busca');
     }
-    
+
     navigate(`/explorar?${params.toString()}`);
   };
-  
+
   // Toggle checkbox
   const toggleCheckbox = (array, setArray, value) => {
     if (array.includes(value)) {
@@ -224,7 +222,7 @@ const Explorar = () => {
       setArray([...array, value]);
     }
   };
-  
+
   // Limpar filtro específico
   const limparPreco = () => {
     setPrecoMin(0);
@@ -232,13 +230,11 @@ const Explorar = () => {
   };
   const limparDistancia = () => setDistancia('qualquer');
   const limparCondicoes = () => setCondicoes([]);
-  const limparBairros = () => setBairros([]);
-  const limparExtras = () => setExtras([]);
-  
+
   const aplicarFiltros = () => {
     buscarAnuncios();
   };
-  
+
   const formatarPreco = (valor) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -270,7 +266,7 @@ const Explorar = () => {
 
   return (
     <div className="explorar-wrapper">
-      
+
       {/* ── Header ── */}
       <header className="site-header">
         <div className="nav-top home-nav">
@@ -281,9 +277,9 @@ const Explorar = () => {
 
           <div className="search-bar">
             <IconSearch />
-            <input 
-              type="text" 
-              placeholder="Buscar sofá, bicicleta, livro, notebook..." 
+            <input
+              type="text"
+              placeholder="Buscar sofá, bicicleta, livro, notebook..."
               value={termoBusca}
               onChange={(e) => setTermoBusca(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleBuscar(e)}
@@ -335,8 +331,8 @@ const Explorar = () => {
 
         {/* ── Nav de categorias — versão editorial com line icons ── */}
         <nav className="nav-categories">
-          <a 
-            href="#" 
+          <a
+            href="#"
             className={!categoriaAtiva ? 'active' : ''}
             onClick={(e) => { e.preventDefault(); setCategoriaAtiva(null); }}
           >
@@ -356,7 +352,7 @@ const Explorar = () => {
 
       {/* ── Main Content ── */}
       <div className="explorar-container">
-        
+
         {/* Breadcrumb */}
         <div className="explorar-breadcrumb">
           <Link to="/">Início</Link>
@@ -373,7 +369,7 @@ const Explorar = () => {
                 {anuncios.length} {anuncios.length === 1 ? 'anúncio encontrado' : 'anúncios encontrados'} em Santo Amaro
               </p>
             </div>
-            
+
             <div className="explorar-sort">
               <span>Ordenar por:</span>
               <select value={ordenacao} onChange={(e) => setOrdenacao(e.target.value)}>
@@ -421,10 +417,10 @@ const Explorar = () => {
 
         {/* Layout principal: Sidebar + Grid */}
         <div className="explorar-main">
-          
+
           {/* ── Sidebar de filtros ── */}
           <aside className="explorar-sidebar">
-            
+
             {/* Faixa de preço */}
             <div className="filter-section">
               <div className="filter-section-title">
@@ -511,7 +507,12 @@ const Explorar = () => {
             ) : anuncios.length > 0 ? (
               <div className="explorar-grid">
                 {anuncios.map((anuncio) => (
-                  <div key={anuncio.id} className="product-card">
+                  /* Card inteiro vira link para a página do anúncio */
+                  <Link
+                    key={anuncio.id}
+                    to={`/anuncio/${anuncio.id}`}
+                    className="product-card product-card-link"
+                  >
                     <div className="product-image">
                       {anuncio.imagem_principal ? (
                         <img src={anuncio.imagem_principal} alt={anuncio.titulo} />
@@ -535,7 +536,7 @@ const Explorar = () => {
                         <span className="product-time">Agora</span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (
@@ -544,7 +545,7 @@ const Explorar = () => {
                   <div className="explorar-empty-icon">📦</div>
                   <h3>Nenhum anúncio por aqui ainda</h3>
                   <p>
-                    Seja o primeiro a anunciar! Publique seu desapego e comece a 
+                    Seja o primeiro a anunciar! Publique seu desapego e comece a
                     movimentar a economia local de Santo Amaro.
                   </p>
                   <Link to={usuario ? '/anunciar' : '/cadastro'}>

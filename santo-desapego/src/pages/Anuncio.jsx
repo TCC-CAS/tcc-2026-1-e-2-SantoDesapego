@@ -25,39 +25,15 @@ const Anuncio = () => {
 
   useEffect(() => {
     setCarregando(true);
-    setErro('');
-
     fetch(`${API_URL}/api/anuncios/${id}`)
-      .then(async (res) => {
-        const texto = await res.text();
-
-        if (!res.ok) {
-          throw new Error(
-            res.status === 404
-              ? `O servidor respondeu 404 em /api/anuncios/${id} — essa rota provavelmente não existe no back-end ainda.`
-              : `O servidor respondeu ${res.status}.`
-          );
-        }
-
-        try {
-          return JSON.parse(texto);
-        } catch {
-          throw new Error('O servidor respondeu, mas não em JSON. Confira a rota /api/anuncios/:id.');
-        }
-      })
+      .then((r) => r.json())
       .then((dados) => {
+        // aceita { anuncio: {...} } ou o objeto direto
         const item = dados.anuncio || (dados.id ? dados : null);
         if (item) setAnuncio(item);
         else setErro(dados.erro || 'Anúncio não encontrado.');
       })
-      .catch((e) => {
-        console.error('[Anuncio]', e);
-        setErro(
-          e.message === 'Failed to fetch'
-            ? 'Não consegui falar com o servidor. Ele está rodando em localhost:8080?'
-            : e.message
-        );
-      })
+      .catch(() => setErro('Erro ao conectar com o servidor.'))
       .finally(() => setCarregando(false));
   }, [id]);
 
@@ -104,11 +80,7 @@ const Anuncio = () => {
   }
 
   // Normaliza campos que podem variar de nome no retorno da API
-  // as imagens podem vir como string base64 ou como objeto { imagem } / { url }
-  const imagens = (anuncio.imagens?.length
-    ? anuncio.imagens
-    : [anuncio.imagem_principal || null]
-  ).map((img) => (typeof img === 'string' || !img ? img : img.imagem || img.url || null));
+  const imagens  = anuncio.imagens?.length ? anuncio.imagens : [null];
   const estado   = ESTADO_LABEL[anuncio.estado_conservacao] || { emoji: '📦', name: anuncio.estado_conservacao || '—' };
   const vendedor = anuncio.usuario?.nome || anuncio.vendedor?.nome || anuncio.usuario_nome || 'Vendedor';
   const categoria = anuncio.categoria?.nome || anuncio.categoria_nome || '';
