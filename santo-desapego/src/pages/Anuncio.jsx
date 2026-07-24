@@ -67,7 +67,7 @@ const Anuncio = () => {
   const comprar = () => {
     const token = localStorage.getItem('sd_token');
     if (!token) { navigate('/login'); return; }
-    navigate('/compra-realizada', { state: { anuncio } });
+    navigate(`/checkout/${anuncio.id}`);
   };
 
   // Abre (ou reaproveita) a conversa com o anunciante e vai para o chat
@@ -223,8 +223,8 @@ const Anuncio = () => {
             {erroAcao && <p className="anuncio-erro-pagamento">{erroAcao}</p>}
 
             <p className="anuncio-nota">
-              Combine a retirada pelo chat antes de fechar negócio. Nunca pague fora
-              da plataforma.
+              Pagamento com cartão em até 12x, processado pelo Mercado Pago.
+              Combine a retirada pelo chat e nunca pague fora da plataforma.
             </p>
 
             <div className="anuncio-vendedor">

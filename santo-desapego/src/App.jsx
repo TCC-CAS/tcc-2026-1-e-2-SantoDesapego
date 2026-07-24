@@ -8,6 +8,7 @@ import Explorar         from './pages/Explorar';
 import Sobre            from './pages/Sobre';
 import Anuncio          from './pages/Anuncio';
 import Mensagens        from './pages/Mensagens';
+import Checkout         from './pages/Checkout';
 import CompraRealizada  from './pages/CompraRealizada';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
         <Route path="/sobre"             element={<Sobre />}            />
         <Route path="/anuncio/:id"       element={<Anuncio />}          />
         <Route path="/mensagens"         element={<Mensagens />}        />
+        <Route path="/checkout/:id"      element={<Checkout />}         />
         <Route path="/compra-realizada"  element={<CompraRealizada />}  />
       </Routes>
     </BrowserRouter>

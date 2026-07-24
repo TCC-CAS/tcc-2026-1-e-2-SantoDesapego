@@ -48,7 +48,7 @@
   font-size: 0.8rem;
   font-weight: 500;
   color: var(--ink-muted);
-  white-space: nowrap;      /* impede a quebra em 2 linhas */
+  white-space: nowrap;      
   padding: 0 0.9rem;
   border-left: 1px solid var(--border);
   flex-shrink: 0;
@@ -98,6 +98,115 @@
   font-weight: 700;
   color: var(--terracotta);
   white-space: nowrap;
+}
+
+/* ==========================================================
+   NAV CATEGORIAS — índice editorial
+   Serifa do display, ativo em itálico terracota com risco
+   mostarda — mesma linguagem do destaque do hero.
+   ========================================================== */
+.nav-categories {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  padding: 0.6rem 1.25rem 0.75rem !important;
+  border-top: 1px solid var(--border-soft);
+  background: transparent;
+
+  overflow-x: auto !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.nav-categories::-webkit-scrollbar { display: none; }
+
+.nav-categories > a:first-child { margin-left: auto !important; }
+.nav-categories > a:last-child  { margin-right: auto !important; }
+
+/* ── Item ── */
+.nav-categories a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.85rem 0.35rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--ink-soft);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.nav-categories a svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.35;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+/* Risco mostarda que cresce do centro — mesmo gesto do hero */
+.nav-categories a::after {
+  content: "";
+  position: absolute;
+  left: 0.85rem;
+  right: 0.85rem;
+  bottom: 0.05rem;
+  height: 0.4em;
+  background: var(--mustard);
+  opacity: 0;
+  transform: scaleX(0.3);
+  transform-origin: center;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  z-index: -1;
+}
+
+/* ── Hover ── */
+.nav-categories a:hover { color: var(--ink); }
+.nav-categories a:hover svg { opacity: 0.8; color: var(--terracotta); }
+.nav-categories a:hover::after { opacity: 0.35; transform: scaleX(1); }
+
+/* ── Ativo — itálico terracota com o risco firme ── */
+.nav-categories a.active {
+  color: var(--terracotta);
+  font-style: italic;
+  font-weight: 400;
+}
+.nav-categories a.active svg {
+  opacity: 1;
+  color: var(--terracotta);
+  font-style: normal;
+}
+.nav-categories a.active::after {
+  opacity: 0.55;
+  transform: scaleX(1);
+}
+
+.nav-categories a:focus-visible {
+  outline: 2px solid var(--terracotta);
+  outline-offset: 2px;
+}
+
+/* ── Separador entre principais e extras ── */
+.nav-sep {
+  flex-shrink: 0;
+  display: inline-block;
+  width: 1px;
+  height: 14px;
+  margin: 0 0.6rem;
+  background: var(--border);
+}
+
+/* Telas médias: sem ícones, só o índice em serifa */
+@media (max-width: 1240px) {
+  .nav-categories a svg { display: none; }
+  .nav-categories a { font-size: 0.9rem; padding-left: 0.7rem; padding-right: 0.7rem; }
+  .nav-categories a::after { left: 0.7rem; right: 0.7rem; }
 }
 
 /* ==========================================================
@@ -263,9 +372,9 @@
   white-space: nowrap;
 }
 
-/* ==========================================================
-   CATEGORIAS
-   ========================================================== */
+/* 
+   CATEGORIAS - Retirado da Home
+
 .cat-grid {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
@@ -285,11 +394,10 @@
 .cat-card:hover { border-color: var(--terracotta); transform: translateY(-3px); background: var(--cream-soft); }
 .cat-icon { width: 52px; height: 52px; margin: 0 auto 0.8rem; border-radius: 14px; display: grid; place-items: center; font-size: 1.6rem; }
 .cat-card .name  { font-weight: 600; font-size: 0.9rem; color: var(--ink); }
-.cat-card .count { font-size: 0.75rem; color: var(--ink-muted); margin-top: 0.2rem; }
+.cat-card .count { font-size: 0.75rem; color: var(--ink-muted); margin-top: 0.2rem; } */
 
-/* ==========================================================
-   PRODUTOS
-   ========================================================== */
+/* PRODUTOS - Retirado da Home
+   
 .products-section { background: var(--paper); }
 .products-section > .section { padding-top: 5rem; padding-bottom: 5rem; }
 
@@ -354,7 +462,7 @@
 .product-meta { display: flex; align-items: center; justify-content: space-between; padding-top: 0.8rem; border-top: 1px solid var(--border-soft); font-size: 0.78rem; color: var(--ink-muted); }
 
 .seller { display: flex; align-items: center; gap: 0.5rem; }
-.seller-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--mustard); color: var(--ink); display: grid; place-items: center; font-size: 0.72rem; font-weight: 700; }
+.seller-avatar { width: 24px; height: 24px; border-radius: 50%; background: var(--mustard); color: var(--ink); display: grid; place-items: center; font-size: 0.72rem; font-weight: 700; } */
 
 /* Empty state — quando não tem anúncios */
 .empty-state {
@@ -712,90 +820,6 @@
 }
 
 /* ==========================================================
-   NAV CATEGORIAS — linha única compacta (cabe tudo na tela)
-   ========================================================== */
-.nav-categories {
-  display: flex !important;
-  flex-wrap: nowrap !important;               /* nunca quebra linha */
-  justify-content: flex-start !important;
-  align-items: center;
-  gap: 0 !important;
-  padding: 0.5rem 1.25rem 0.75rem !important;
-  border-top: 1px solid var(--border-soft);
-  overflow-x: auto !important;      /* scroll lateral só se realmente faltar espaço */
-  scrollbar-width: none;            /* esconde a barra de rolagem (Firefox) */
-  -ms-overflow-style: none;
-}
-.nav-categories::-webkit-scrollbar { display: none; } /* Chrome/Edge */
-
-/* Centraliza quando cabe tudo; com scroll, comporta-se como alinhado à esquerda.
-   (margens auto nas pontas = "safe center" compatível com todos os navegadores) */
-.nav-categories > a:first-child { margin-left: auto !important; }
-.nav-categories > a:last-child  { margin-right: auto !important; }
-
-.nav-categories a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.38rem;
-  padding: 0.45rem 0.65rem;
-  font-family: var(--font-body);
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  color: var(--ink-soft);
-  text-decoration: none;
-  border-radius: var(--radius-pill);
-  white-space: nowrap;
-  flex-shrink: 0;                   /* itens não espremem */
-  position: relative;
-  transition: color 0.18s ease, background 0.18s ease;
-}
-
-.nav-categories a svg {
-  width: 14px;
-  height: 14px;
-  opacity: 0.55;
-  flex-shrink: 0;
-  transition: opacity 0.18s ease, color 0.18s ease, transform 0.25s ease;
-}
-
-.nav-categories a:hover {
-  color: var(--ink);
-  background: var(--cream-soft);
-}
-.nav-categories a:hover svg {
-  opacity: 1;
-  color: var(--terracotta);
-  transform: translateY(-1px);
-}
-
-/* Estado ativo — pílula escura */
-.nav-categories a.active {
-  color: var(--cream);
-  font-weight: 600;
-  background: var(--ink);
-}
-.nav-categories a.active svg {
-  opacity: 1;
-  color: var(--mustard);
-}
-
-/* Separador entre categorias principais e extras (vintage / trocas) */
-.nav-sep {
-  width: 1px;
-  height: 16px;
-  background: var(--border);
-  margin: 0 0.35rem;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-/* Em telas médias, esconde os ícones das categorias — só texto, tudo cabe */
-@media (max-width: 1240px) {
-  .nav-categories a svg { display: none; }
-}
-
-/* ==========================================================
    RESPONSIVIDADE
    ========================================================== */
 @media (max-width: 1024px) {
@@ -811,13 +835,24 @@
   .footer-wrap { grid-template-columns: 1fr 1fr; gap: 2rem; }
 }
 
+@media (max-width: 900px) {
+  .nav-categories > a:first-child { margin-left: 0 !important; }
+  .nav-categories > a:last-child  { margin-right: 0 !important; }
+}
+
 @media (max-width: 600px) {
   .section { padding: 3rem 1.25rem; }
-  .nav-categories { padding: 0.5rem 1rem 0.7rem !important; }
+  .nav-categories { padding: 0.5rem 1rem !important; }
   .nav-actions a:not(.btn-sell) { display: none; }
   .hero-trust { flex-wrap: wrap; gap: 1.5rem; }
   .cat-grid { grid-template-columns: repeat(2, 1fr); }
   .products-grid { grid-template-columns: 1fr; }
   .impact-grid { grid-template-columns: 1fr; }
   .footer-wrap { grid-template-columns: 1fr; }
+}
+
+/* ── Acessibilidade ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .nav-categories a,
+  .nav-categories a svg { transition: none; }
 }

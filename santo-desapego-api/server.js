@@ -8,6 +8,11 @@ const jwt     = require('jsonwebtoken');
 require('dotenv').config();
 const pool = require('./db');
 
+// Mercado Pago — SDK v2
+const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
+const mp = new MercadoPagoConfig({ accessToken: process.env.MP_ACCESS_TOKEN });
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 const app = express();
 
 // Aumenta o limite pra suportar múltiplas imagens em base64
@@ -1041,6 +1046,147 @@ app.post('/api/conversas/:id/mensagens', autenticar, async (req, res) => {
   } catch (erro) {
     console.error('Erro ao enviar mensagem:', erro);
     return res.status(500).json({ erro: 'Erro ao enviar mensagem.' });
+  }
+});
+
+// ============================================================
+//  PAGAMENTO — cria a preferência do Checkout Pro (só cartão)
+//  Chamada pela tela de revisão do pedido (/checkout/:id).
+// ============================================================
+app.post('/api/pagamentos/preferencia', autenticar, async (req, res) => {
+  try {
+    const { anuncio_id } = req.body;
+
+    if (!anuncio_id) {
+      return res.status(400).json({ erro: 'Informe o anúncio que será comprado.' });
+    }
+
+    // O preço vem SEMPRE do banco — nunca do que o front mandou
+    const resultado = await pool.query(
+      `SELECT a.id, a.titulo, a.preco, a.status, a.vendedor_id,
+              c.nome AS categoria_nome
+         FROM anuncios a
+         JOIN categorias c ON c.id = a.categoria_id
+        WHERE a.id = $1`,
+      [anuncio_id]
+    );
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ erro: 'Anúncio não encontrado.' });
+    }
+
+    const anuncio = resultado.rows[0];
+
+    if (anuncio.status !== 'ativo') {
+      return res.status(400).json({ erro: 'Este anúncio não está mais disponível.' });
+    }
+    if (anuncio.vendedor_id === req.userId) {
+      return res.status(400).json({ erro: 'Você não pode comprar o seu próprio anúncio.' });
+    }
+
+    // Dados do comprador ajudam o Mercado Pago a aprovar mais pagamentos
+    const comprador = await pool.query(
+      'SELECT nome, sobrenome, email FROM usuarios WHERE id = $1',
+      [req.userId]
+    );
+
+    const preference = new Preference(mp);
+
+    const resposta = await preference.create({
+      body: {
+        items: [
+          {
+            id: String(anuncio.id),
+            title: anuncio.titulo,
+            description: anuncio.categoria_nome,
+            quantity: 1,
+            currency_id: 'BRL',
+            unit_price: Number(anuncio.preco),
+          },
+        ],
+
+        payer: {
+          name: comprador.rows[0]?.nome,
+          surname: comprador.rows[0]?.sobrenome,
+          email: comprador.rows[0]?.email,
+        },
+
+        // Só cartão — sem Pix, boleto ou lotérica
+        payment_methods: {
+          excluded_payment_types: [
+            { id: 'ticket' },         // boleto e lotérica
+            { id: 'bank_transfer' },  // Pix
+            { id: 'atm' },            // caixa eletrônico
+          ],
+          installments: 12,
+        },
+
+        back_urls: {
+          success: `${FRONTEND_URL}/compra-realizada`,
+          pending: `${FRONTEND_URL}/compra-realizada`,
+          failure: `${FRONTEND_URL}/checkout/${anuncio.id}?falhou=1`,
+        },
+
+        // auto_return não funciona com localhost — o Mercado Pago exige uma
+        // URL pública com HTTPS. Em desenvolvimento, o comprador volta pelo
+        // botão "Voltar ao site" na tela de confirmação do Mercado Pago.
+        // Ao publicar o projeto com domínio real, basta descomentar:
+        // auto_return: 'approved',
+
+        external_reference: String(anuncio.id),
+        statement_descriptor: 'SANTO DESAPEGO',
+      },
+    });
+
+    console.log(`💳 Preferência criada — anúncio #${anuncio.id}`);
+
+    return res.json({
+      preference_id: resposta.id,
+      // Com credenciais TEST-, o init_point normal já roda em modo de teste.
+      // Não usamos sandbox_init_point: aquele subdomínio (sandbox.mercadopago
+      // .com.br) entra em loop de login com usuários de teste.
+      init_point: resposta.init_point,
+    });
+
+  } catch (erro) {
+    // Mostra o que o Mercado Pago realmente respondeu
+    console.error('──────── ERRO MERCADO PAGO ────────');
+    console.error('Mensagem:', erro.message);
+    console.error('Status:', erro.status || erro.statusCode);
+    console.error('Detalhes:', JSON.stringify(erro.cause || erro.error || {}, null, 2));
+    console.error('───────────────────────────────────');
+
+    return res.status(500).json({
+      erro: 'Não foi possível iniciar o pagamento.',
+      detalhe: erro.message,
+    });
+  }
+});
+
+// ============================================================
+//  PAGAMENTO — consulta o status real de um pagamento
+//  A tela de confirmação usa o payment_id que vem na URL.
+// ============================================================
+app.get('/api/pagamentos/:paymentId', async (req, res) => {
+  try {
+    const payment = new Payment(mp);
+    const dados = await payment.get({ id: req.params.paymentId });
+
+    return res.json({
+      pagamento: {
+        id: dados.id,
+        status: dados.status,               // approved, pending, rejected...
+        status_detail: dados.status_detail,
+        valor: dados.transaction_amount,
+        metodo: dados.payment_method_id,    // visa, master, elo...
+        tipo: dados.payment_type_id,        // credit_card, debit_card
+        parcelas: dados.installments,
+        anuncio_id: dados.external_reference,
+      },
+    });
+  } catch (erro) {
+    console.error('Erro ao consultar pagamento:', erro);
+    return res.status(500).json({ erro: 'Erro ao consultar o pagamento.' });
   }
 });
 

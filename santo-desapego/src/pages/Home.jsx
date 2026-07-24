@@ -4,103 +4,6 @@ import './Home.css';
 import Mapa from '../componentes/Mapa';
 
 /* ── Dados — altere aqui sem tocar no JSX ──────────────────── */
-const CATEGORIES = [
-  { id: 1, icon: '🛋️', name: 'Móveis & Casa',    bg: '#F7D7CB' },
-  { id: 2, icon: '💻', name: 'Eletrônicos',       bg: '#D0DFD6' },
-  { id: 3, icon: '👗', name: 'Moda',              bg: '#FCE5B6' },
-  { id: 4, icon: '🧸', name: 'Infantil & Bebê',   bg: '#E5D5EB' },
-  { id: 5, icon: '📚', name: 'Livros',            bg: '#FCD3C1' },
-  { id: 6, icon: '🚴', name: 'Esporte & Lazer',   bg: '#C9DDE8' },
-  { id: 7, icon: '🎨', name: 'Arte & Decoração',  bg: '#E8DCC4' },
-  { id: 8, icon: '🔧', name: 'Ferramentas',       bg: '#E1D1C0' },
-];
-
-const FILTER_CHIPS = ['Todos', 'Mais recentes', 'Aceita troca', 'Abaixo de R$100', 'Perto de mim'];
-
-const PRODUCTS = [
-  {
-    id: 1,
-    img: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&q=80',
-    cat: 'Móveis',
-    title: 'Sofá 3 lugares veludo verde • excelente estado',
-    price: 'R$ 950',
-    seller: 'Mariana',
-    hood: 'Jardim Marajoara • 0,8km',
-    badge: { label: 'Novo anúncio', type: 'new' },
-  },
-  {
-    id: 2,
-    img: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=500&q=80',
-    cat: 'Eletrônicos',
-    title: 'Canon AE-1 analógica com flash e 3 rolos',
-    price: 'R$ 380',
-    seller: 'João',
-    hood: 'Campo Belo • 1,2km',
-    badge: null,
-  },
-  {
-    id: 3,
-    img: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80',
-    cat: 'Cozinha',
-    title: 'Cafeteira italiana Bialetti 6 xícaras',
-    price: 'R$ 65',
-    seller: 'Renata',
-    hood: 'Santo Amaro • 0,4km',
-    badge: { label: 'Aceita troca', type: '' },
-  },
-  {
-    id: 4,
-    img: 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=500&q=80',
-    cat: 'Livros',
-    title: 'Coleção Harry Potter capa dura completa',
-    price: 'R$ 220',
-    seller: 'Clara',
-    hood: 'Brooklin • 2,3km',
-    badge: { label: '🔥 Em alta', type: 'hot' },
-  },
-  {
-    id: 5,
-    img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&q=80',
-    cat: 'Eletrônicos',
-    title: 'MacBook Air 2020 M1, 8GB, 256GB SSD',
-    price: 'R$ 3.850',
-    priceOld: 'R$ 7.499',
-    seller: 'Paulo',
-    hood: 'Granja Julieta • 1,8km',
-    badge: null,
-  },
-  {
-    id: 6,
-    img: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=500&q=80',
-    cat: 'Decoração',
-    title: 'Luminária vintage de latão anos 70',
-    price: 'R$ 150',
-    seller: 'Luisa',
-    hood: 'Vila Sofia • 2,1km',
-    badge: null,
-  },
-  {
-    id: 7,
-    img: 'https://images.unsplash.com/photo-1566479179817-c0b5b4b4b1e1?w=500&q=80',
-    cat: 'Infantil',
-    title: 'Carrinho de bebê Galzerano, excelente estado',
-    price: 'R$ 380',
-    seller: 'Erica',
-    hood: 'Brooklin • 3,0km',
-    badge: { label: 'Aceita troca', type: '' },
-  },
-  {
-    id: 8,
-    img: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=500&q=80',
-    cat: 'Ferramentas',
-    title: 'Furadeira Bosch com kit de brocas',
-    price: 'R$ 190',
-    seller: 'André',
-    hood: 'Vila Mascote • 1,5km',
-    badge: null,
-  },
-];
-
 const STEPS = [
   {
     num: '01',
@@ -191,11 +94,6 @@ const IconArrow = () => (
     <path d="M5 12h14M13 5l7 7-7 7"/>
   </svg>
 );
-const IconHeart = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-  </svg>
-);
 const IconLogout = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -273,11 +171,7 @@ const IconRefresh = () => (
    ════════════════════════════════════════════════════════════ */
 const Home = () => {
   const navigate = useNavigate();
-  const [activeFilter, setActiveFilter] = useState('Todos');
-  const [favorites, setFavorites] = useState(new Set());
   const [termoBusca, setTermoBusca] = useState('');
-  const [anunciosReais, setAnunciosReais] = useState([]);
-  const [carregandoAnuncios, setCarregandoAnuncios] = useState(true);
 
   // ── Sugestões de busca (dropdown enquanto digita)
   const [sugestoes, setSugestoes] = useState([]);
@@ -297,24 +191,6 @@ const Home = () => {
         localStorage.removeItem('sd_token');
       }
     }
-  }, []);
-
-  // Buscar anúncios reais da API
-  useEffect(() => {
-    const buscarAnuncios = async () => {
-      try {
-        const res = await fetch('http://localhost:8080/api/anuncios?limite=8&ordenacao=recentes');
-        const data = await res.json();
-        setAnunciosReais(data.anuncios || []);
-      } catch (erro) {
-        console.error('Erro ao buscar anúncios:', erro);
-        setAnunciosReais([]);
-      } finally {
-        setCarregandoAnuncios(false);
-      }
-    };
-    
-    buscarAnuncios();
   }, []);
 
   // Busca sugestões enquanto digita (com debounce de 300ms)
@@ -345,7 +221,7 @@ const Home = () => {
     setUsuario(null);
     navigate('/');
   };
-  
+
   const handleBuscar = (e) => {
     e.preventDefault();
     setMostrarSugestoes(false);
@@ -355,13 +231,6 @@ const Home = () => {
       navigate('/explorar');
     }
   };
-
-  const toggleFav = (id) =>
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
 
   // ── CTA "Anunciar grátis": leva pra /anunciar se logado, pra /cadastro se visitante ──
   const linkAnunciar = usuario ? '/anunciar' : '/cadastro';
@@ -546,108 +415,6 @@ const Home = () => {
               <div className="hood">{c.hood}</div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════
-          CATEGORIAS
-          ══════════════════════════════════ */}
-      <section>
-        <div className="section">
-          <div className="section-head">
-            <div>
-              <h2>Explore por <em>categoria</em></h2>
-              <p>Do sofá ao tênis — tudo perto de você.</p>
-            </div>
-            <Link to="/explorar" className="head-link">Ver tudo →</Link>
-          </div>
-
-          <div className="cat-grid">
-            {CATEGORIES.map((c) => (
-              <Link 
-                key={c.name} 
-                to={`/explorar?categoria_id=${c.id}`} 
-                className="cat-card"
-              >
-                <div className="cat-icon" style={{ background: c.bg }}>{c.icon}</div>
-                <div className="name">{c.name}</div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════
-          PRODUTOS EM DESTAQUE
-          ══════════════════════════════════ */}
-      <section className="products-section" id="produtos">
-        <div className="section">
-          <div className="section-head">
-            <div>
-              <h2>Veja o que você <em>pode encontrar</em></h2>
-              <p>Anúncios recentes em Santo Amaro.</p>
-            </div>
-            {anunciosReais.length > 0 && (
-              <Link to="/explorar" className="head-link">Ver todos →</Link>
-            )}
-          </div>
-
-          {/* LOADING */}
-          {carregandoAnuncios && (
-            <div className="products-loading">
-              <p>Buscando anúncios...</p>
-            </div>
-          )}
-
-          {/* GRID COM ANÚNCIOS REAIS */}
-          {!carregandoAnuncios && anunciosReais.length > 0 && (
-            <div className="products-grid">
-              {anunciosReais.map((p) => (
-                <article key={p.id} className="product">
-                  <div className="product-img">
-                    <img 
-                      src={p.imagem_principal || 'https://via.placeholder.com/400x400?text=Sem+imagem'} 
-                      alt={p.titulo} 
-                      loading="lazy" 
-                    />
-                    <button
-                      className={`product-fav${favorites.has(p.id) ? ' favorited' : ''}`}
-                      onClick={() => toggleFav(p.id)}
-                      aria-label="Favoritar"
-                    >
-                      <IconHeart />
-                    </button>
-                  </div>
-                  <div className="product-body">
-                    <div className="product-cat">{p.categoria_nome}</div>
-                    <h3 className="product-title">{p.titulo}</h3>
-                    <div className="product-price">
-                      R$ {parseFloat(p.preco || 0).toFixed(2)}
-                    </div>
-                    <div className="product-meta">
-                      <div className="seller">
-                        <div className="seller-avatar">{p.vendedor_nome?.[0] || '?'}</div>
-                        <span>{p.vendedor_nome || 'Anônimo'}</span>
-                      </div>
-                      <span>{p.bairro || 'Santo Amaro'}</span>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-
-          {/* CTA QUANDO NÃO TEM ANÚNCIOS */}
-          {!carregandoAnuncios && anunciosReais.length === 0 && (
-            <div className="empty-state">
-              <div className="empty-icon">📦</div>
-              <h3>Ainda não há anúncios em Santo Amaro</h3>
-              <p>Seja o primeiro a desapegar e ajude a construir<br />a economia circular do bairro!</p>
-              <Link to="/anunciar" className="btn-home-primary">
-                + Criar meu primeiro anúncio
-              </Link>
-            </div>
-          )}
         </div>
       </section>
 
