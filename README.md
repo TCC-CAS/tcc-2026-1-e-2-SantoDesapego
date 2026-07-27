@@ -15,9 +15,11 @@ O protótipo e os fluxos de usuário podem ser visualizados diretamente no Figma
 - Oferecer uma plataforma segura e intuitiva para intermediação de produtos.
 
 ## 💻 Tecnologias Utilizadas
-- **Frontend:** HTML, CSS, JavaScript (React / Vue)
-- **Backend:** Node.js / PHP
-- **Banco de Dados:** MySQL / PostgreSQL 
+- **Frontend:** React 19 + Vite, React Router, Leaflet (mapas), Google OAuth
+- **Backend:** Node.js + Express 5
+- **Banco de Dados:** PostgreSQL
+- **Autenticação:** JWT, bcrypt, Google Auth Library
+- **Pagamentos:** Mercado Pago
 - **Versionamento:** Git & GitHub
 
 ## 👥 Integrantes do Grupo
@@ -28,12 +30,44 @@ O protótipo e os fluxos de usuário podem ser visualizados diretamente no Figma
 **Orientador:** Prof. Jose Martinele Alves Silva
 
 ## 📁 Estrutura do Repositório
-- `/Documentacao`: Contém os arquivos de texto e entregas acadêmicas (DOCX/PDF).
-- `/src`: Código-fonte da aplicação.
-- `/docs`: Diagramas e manuais de uso.
+- `/santo-desapego`: Frontend da aplicação (React + Vite).
+- `/santo-desapego-api`: Backend/API da aplicação (Node.js + Express + PostgreSQL).
+- `/docs`: Diagramas, arquitetura, casos de uso, modelagem de banco, cronogramas e entregas acadêmicas.
 
 ## 🚀 Como executar o projeto
-*(Em breve, instruções de como rodar o sistema localmente)*
+
+### Pré-requisitos
+- Node.js
+- PostgreSQL
+
+### Backend (`santo-desapego-api`)
+```bash
+cd santo-desapego-api
+npm install
+```
+Crie um arquivo `.env` na raiz de `santo-desapego-api` com as variáveis:
+```
+DB_USER=
+DB_HOST=
+DB_NAME=
+DB_PASSWORD=
+DB_PORT=5432
+JWT_SECRET=
+PORT=
+FRONTEND_URL=
+MP_ACCESS_TOKEN=
+```
+Crie o banco de dados usando o script `schema.sql` e inicie o servidor:
+```bash
+npm run dev
+```
+
+### Frontend (`santo-desapego`)
+```bash
+cd santo-desapego
+npm install
+npm run dev
+```
 
 ---
 © 2026 - Bacharelado em Sistemas de Informação - Centro Universitário Senac
