@@ -36,7 +36,16 @@ const I = {
 
 const BAIRROS = ['Santo Amaro Centro','Campo Belo','Brooklin','Granja Julieta','Jardim Marajoara','Vila Cruzeiro','Vila Mascote','Vila Sofia','Outro bairro'];
 
+const STATUS_ANUNCIO = {
+  ativo:   { label: 'Ativo',   cls: 'ativo' },
+  vendido: { label: 'Vendido', cls: 'vendido' },
+  pausado: { label: 'Pausado', cls: 'pausado' },
+};
+
 /* ── Utils ─────────────────────────────────────────────────── */
+const brl = (v) => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const dataBR = (v) => new Date(v).toLocaleDateString('pt-BR');
+
 const maskCPF = (v) => {
   const n = (v || '').replace(/\D/g, '').slice(0, 11);
   if (n.length === 11) return `${n.slice(0,3)}.${n.slice(3,6)}.${n.slice(6,9)}-${n.slice(9)}`;
@@ -148,6 +157,18 @@ const Perfil = () => {
               onClick={() => setAba('painel')} role="tab">
               <I.layout /> Visão geral
             </button>
+            <button className={`perfil-tab${aba === 'anuncios' ? ' active' : ''}`}
+              onClick={() => setAba('anuncios')} role="tab">
+              <I.tag /> Meus anúncios
+            </button>
+            <button className={`perfil-tab${aba === 'compras' ? ' active' : ''}`}
+              onClick={() => setAba('compras')} role="tab">
+              <I.bag /> Compras realizadas
+            </button>
+            <button className={`perfil-tab${aba === 'avaliacoes' ? ' active' : ''}`}
+              onClick={() => setAba('avaliacoes')} role="tab">
+              <I.star /> Avaliações
+            </button>
             <button className={`perfil-tab${aba === 'dados' ? ' active' : ''}`}
               onClick={() => setAba('dados')} role="tab">
               <I.user /> Dados pessoais
@@ -169,7 +190,10 @@ const Perfil = () => {
 
         {/* ════ CONTEÚDO ════ */}
         <main className="perfil-content">
-          {aba === 'painel'    && <SecaoPainel    usuario={usuario} estatisticas={estatisticas} />}
+          {aba === 'painel'     && <SecaoPainel     usuario={usuario} estatisticas={estatisticas} />}
+          {aba === 'anuncios'   && <SecaoAnuncios   />}
+          {aba === 'compras'    && <SecaoCompras    />}
+          {aba === 'avaliacoes' && <SecaoAvaliacoes />}
           {aba === 'dados'     && <SecaoDados     usuario={usuario} setUsuario={setUsuario} />}
           {aba === 'endereco'  && <SecaoEndereco  usuario={usuario} setUsuario={setUsuario} />}
           {aba === 'seguranca' && <SecaoSeguranca />}
@@ -346,6 +370,307 @@ const SecaoPainel = ({ usuario, estatisticas }) => {
         <h4>Você ainda não tem atividade por aqui</h4>
         <p>Quando publicar um anúncio ou fazer uma compra, tudo aparece aqui.</p>
       </div>
+    </>
+  );
+};
+
+/* ════════════════════════════════════════════════════════════
+   SEÇÃO MEUS ANÚNCIOS
+   ════════════════════════════════════════════════════════════ */
+const SecaoAnuncios = () => {
+  const [anuncios, setAnuncios] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/usuario/anuncios`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setAnuncios(data.anuncios || []))
+      .catch(() => setAnuncios([]))
+      .finally(() => setCarregando(false));
+  }, []);
+
+  return (
+    <>
+      <div className="perfil-section-head">
+        <h1>Meus <em>anúncios</em></h1>
+        <p>Tudo o que você já publicou no Santo Desapego — ativo, vendido ou pausado.</p>
+      </div>
+
+      {carregando && <p className="perfil-loading">Carregando anúncios...</p>}
+
+      {!carregando && anuncios?.length === 0 && (
+        <div className="painel-empty">
+          <div className="painel-empty-icon">🏷️</div>
+          <h4>Você ainda não publicou nenhum anúncio</h4>
+          <p>Que tal transformar o que você não usa mais em renda extra?</p>
+          <Link to="/anunciar" className="painel-cta-btn painel-empty-btn">
+            <I.plus /> Criar anúncio
+          </Link>
+        </div>
+      )}
+
+      {!carregando && anuncios?.length > 0 && (
+        <div className="lista-anuncios">
+          {anuncios.map((a) => {
+            const status = STATUS_ANUNCIO[a.status] || { label: a.status, cls: '' };
+            return (
+              <Link to={`/anuncio/${a.id}`} key={a.id} className="anuncio-card-perfil">
+                <div className="anuncio-card-perfil-img">
+                  {a.imagem_principal
+                    ? <img src={a.imagem_principal} alt={a.titulo} />
+                    : <span>📦</span>}
+                </div>
+                <div className="anuncio-card-perfil-info">
+                  <h3>{a.titulo}</h3>
+                  <p>{a.categoria_nome} · publicado em {dataBR(a.data_criacao)}</p>
+                </div>
+                <div className="anuncio-card-perfil-meta">
+                  <span className={`status-badge ${status.cls}`}>{status.label}</span>
+                  <strong>{brl(a.preco)}</strong>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+};
+
+/* ════════════════════════════════════════════════════════════
+   ESTRELAS — exibição e input reutilizáveis
+   ════════════════════════════════════════════════════════════ */
+const Estrelas = ({ nota }) => (
+  <div className="estrelas-display">
+    {[1, 2, 3, 4, 5].map((n) => (
+      <span key={n} className={n <= Math.round(nota) ? 'cheia' : ''}><I.star /></span>
+    ))}
+  </div>
+);
+
+const EstrelasInput = ({ valor, onChange }) => (
+  <div className="estrelas-input">
+    {[1, 2, 3, 4, 5].map((n) => (
+      <button type="button" key={n}
+        className={`estrela-btn${n <= valor ? ' cheia' : ''}`}
+        onClick={() => onChange(n)}
+        aria-label={`${n} estrela${n > 1 ? 's' : ''}`}>
+        <I.star />
+      </button>
+    ))}
+  </div>
+);
+
+/* ════════════════════════════════════════════════════════════
+   FORMULÁRIO — avaliar o vendedor de uma compra
+   ════════════════════════════════════════════════════════════ */
+const FormAvaliar = ({ compra, aoEnviar, aoCancelar }) => {
+  const [nota, setNota] = useState(0);
+  const [comentario, setComentario] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState('');
+
+  const enviar = async () => {
+    if (!nota) { setErro('Escolha uma nota de 1 a 5 estrelas.'); return; }
+    setEnviando(true);
+    setErro('');
+    try {
+      const resposta = await fetch(`${API_URL}/api/avaliacoes`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('sd_token')}`,
+        },
+        body: JSON.stringify({ compra_id: compra.id, nota, comentario: comentario.trim() || null }),
+      });
+      const dados = await resposta.json();
+      if (!resposta.ok) {
+        setErro(dados.erro || 'Erro ao enviar avaliação.');
+        return;
+      }
+      aoEnviar();
+    } catch {
+      setErro('Erro ao conectar com o servidor.');
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <div className="avaliar-form">
+      <p className="avaliar-form-label">Como foi negociar com {compra.vendedor_nome}?</p>
+      <EstrelasInput valor={nota} onChange={setNota} />
+      <textarea
+        className="avaliar-textarea"
+        placeholder="Conte como foi a negociação (opcional)"
+        value={comentario}
+        maxLength={500}
+        onChange={(e) => setComentario(e.target.value)}
+      />
+      {erro && <span className="avaliar-erro"><I.alert /> {erro}</span>}
+      <div className="avaliar-form-acoes">
+        <button type="button" className="btn-perfil-primary" onClick={enviar} disabled={enviando}>
+          {enviando ? 'Enviando...' : 'Enviar avaliação'}
+        </button>
+        <button type="button" className="btn-perfil-secondary" onClick={aoCancelar} disabled={enviando}>
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+};
+
+/* ════════════════════════════════════════════════════════════
+   SEÇÃO COMPRAS REALIZADAS
+   ════════════════════════════════════════════════════════════ */
+const SecaoCompras = () => {
+  const [compras, setCompras] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+  const [abrirAvaliar, setAbrirAvaliar] = useState(null);
+
+  const recarregar = () => {
+    setCarregando(true);
+    carregar();
+  };
+
+  const carregar = () => {
+    fetch(`${API_URL}/api/usuario/compras`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
+    })
+      .then((r) => r.json())
+      .then((data) => setCompras(data.compras || []))
+      .catch(() => setCompras([]))
+      .finally(() => setCarregando(false));
+  };
+
+  useEffect(() => { carregar(); }, []);
+
+  return (
+    <>
+      <div className="perfil-section-head">
+        <h1>Compras <em>realizadas</em></h1>
+        <p>Histórico do que você já garimpou no Santo Desapego.</p>
+      </div>
+
+      {carregando && <p className="perfil-loading">Carregando compras...</p>}
+
+      {!carregando && compras?.length === 0 && (
+        <div className="painel-empty">
+          <div className="painel-empty-icon">🛍️</div>
+          <h4>Você ainda não fez nenhuma compra</h4>
+          <p>Quando você comprar algo, o histórico aparece aqui.</p>
+          <Link to="/explorar" className="painel-cta-btn painel-empty-btn">
+            <I.search /> Explorar desapegos
+          </Link>
+        </div>
+      )}
+
+      {!carregando && compras?.length > 0 && (
+        <div className="lista-compras">
+          {compras.map((c) => (
+            <div className="compra-card-perfil" key={c.id}>
+              <Link to={`/anuncio/${c.anuncio_id}`} className="compra-card-perfil-img">
+                {c.anuncio_imagem
+                  ? <img src={c.anuncio_imagem} alt={c.anuncio_titulo} />
+                  : <span>📦</span>}
+              </Link>
+              <div className="compra-card-perfil-info">
+                <Link to={`/anuncio/${c.anuncio_id}`}><h3>{c.anuncio_titulo}</h3></Link>
+                <p>Vendido por {c.vendedor_nome} {c.vendedor_sobrenome} · {dataBR(c.criada_em)}</p>
+                <strong>{brl(c.preco)}</strong>
+
+                {c.ja_avaliei ? (
+                  <span className="avaliei-badge"><I.check /> Você avaliou esta compra</span>
+                ) : abrirAvaliar === c.id ? (
+                  <FormAvaliar
+                    compra={c}
+                    aoEnviar={() => { setAbrirAvaliar(null); recarregar(); }}
+                    aoCancelar={() => setAbrirAvaliar(null)}
+                  />
+                ) : (
+                  <button type="button" className="btn-perfil-secondary avaliar-btn"
+                    onClick={() => setAbrirAvaliar(c.id)}>
+                    <I.star /> Avaliar vendedor
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
+
+/* ════════════════════════════════════════════════════════════
+   SEÇÃO AVALIAÇÕES RECEBIDAS
+   ════════════════════════════════════════════════════════════ */
+const SecaoAvaliacoes = () => {
+  const [dados, setDados] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/usuario/avaliacoes`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('sd_token')}` },
+    })
+      .then((r) => r.json())
+      .then(setDados)
+      .catch(() => setDados({ avaliacoes: [], media: null, total: 0 }))
+      .finally(() => setCarregando(false));
+  }, []);
+
+  return (
+    <>
+      <div className="perfil-section-head">
+        <h1>Minhas <em>avaliações</em></h1>
+        <p>O que quem comprou de você achou da negociação.</p>
+      </div>
+
+      {carregando && <p className="perfil-loading">Carregando avaliações...</p>}
+
+      {!carregando && dados?.total > 0 && (
+        <div className="avaliacoes-resumo">
+          <div className="avaliacoes-media-num">{dados.media.toFixed(1)}</div>
+          <div className="avaliacoes-media-info">
+            <Estrelas nota={dados.media} />
+            <span>{dados.total} avaliaç{dados.total > 1 ? 'ões' : 'ão'}</span>
+          </div>
+        </div>
+      )}
+
+      {!carregando && dados?.avaliacoes?.length === 0 && (
+        <div className="painel-empty">
+          <div className="painel-empty-icon">⭐</div>
+          <h4>Você ainda não recebeu avaliações</h4>
+          <p>Quando alguém comprar de você e avaliar a negociação, aparece aqui.</p>
+        </div>
+      )}
+
+      {!carregando && dados?.avaliacoes?.length > 0 && (
+        <div className="lista-avaliacoes">
+          {dados.avaliacoes.map((av) => (
+            <div className="avaliacao-card" key={av.id}>
+              <div className="avaliacao-card-topo">
+                <div className="avaliacao-avaliador">
+                  <div className="avaliacao-avatar">
+                    {av.avaliador_foto
+                      ? <img src={av.avaliador_foto} alt={av.avaliador_nome} />
+                      : av.avaliador_nome[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <strong>{av.avaliador_nome}</strong>
+                    <span>{av.anuncio_titulo} · {dataBR(av.criada_em)}</span>
+                  </div>
+                </div>
+                <Estrelas nota={av.nota} />
+              </div>
+              {av.comentario && <p className="avaliacao-comentario">"{av.comentario}"</p>}
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 };

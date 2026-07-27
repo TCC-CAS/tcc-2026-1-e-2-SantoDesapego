@@ -41,6 +41,23 @@ export default function CompraRealizada() {
       .finally(() => setCarregando(false));
   }, [paymentId]);
 
+  // Grava a compra no banco assim que o pagamento é confirmado como aprovado
+  useEffect(() => {
+    if (!paymentId || pagamento?.status !== 'approved') return;
+
+    const token = localStorage.getItem('sd_token');
+    if (!token) return;
+
+    fetch(`${API_URL}/api/compras/confirmar`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ payment_id: paymentId }),
+    }).catch((e) => console.error('[compra] confirmar', e));
+  }, [paymentId, pagamento]);
+
   const status = pagamento?.status || statusUrl || 'approved';
   const aprovado = status === 'approved';
 

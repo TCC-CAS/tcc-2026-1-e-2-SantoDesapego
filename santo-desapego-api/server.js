@@ -287,13 +287,23 @@ app.get('/api/usuario/perfil', autenticar, async (req, res) => {
        FROM anuncios WHERE vendedor_id = $1`, [req.userId]
     );
 
+    const compras = await pool.query(
+      `SELECT COUNT(*) AS total
+       FROM compras WHERE comprador_id = $1 AND status = 'approved'`, [req.userId]
+    );
+
+    const avaliacoes = await pool.query(
+      `SELECT AVG(nota)::float AS media, COUNT(*) AS total
+       FROM avaliacoes WHERE avaliado_id = $1`, [req.userId]
+    );
+
     const estatisticas = {
       anuncios_ativos:    parseInt(stats.rows[0]?.anuncios_ativos)   || 0,
       anuncios_vendidos:  parseInt(stats.rows[0]?.anuncios_vendidos) || 0,
       anuncios_pausados:  parseInt(stats.rows[0]?.anuncios_pausados) || 0,
-      compras_realizadas: 0,
-      reputacao_media:    null,
-      total_avaliacoes:   0,
+      compras_realizadas: parseInt(compras.rows[0]?.total) || 0,
+      reputacao_media:    avaliacoes.rows[0]?.media ?? null,
+      total_avaliacoes:   parseInt(avaliacoes.rows[0]?.total) || 0,
       mensagens_nao_lidas: 0,
     };
 
@@ -483,6 +493,153 @@ app.delete('/api/usuario/conta', autenticar, async (req, res) => {
   } catch (erro) {
     console.error('Erro ao excluir conta:', erro);
     return res.status(500).json({ erro: 'Erro ao excluir conta.' });
+  }
+});
+
+// ============================================================
+//  GET MEUS ANÚNCIOS — anúncios do vendedor logado (todos status)
+//  Usado na aba "Anúncios" do perfil.
+// ============================================================
+app.get('/api/usuario/anuncios', autenticar, async (req, res) => {
+  try {
+    const resultado = await pool.query(
+      `SELECT
+         a.id, a.titulo, a.preco, a.status, a.estado_conservacao, a.data_criacao,
+         c.nome AS categoria_nome,
+         (SELECT imagem FROM anuncio_imagens
+           WHERE anuncio_id = a.id AND is_principal = TRUE LIMIT 1) AS imagem_principal
+       FROM anuncios a
+       JOIN categorias c ON c.id = a.categoria_id
+       WHERE a.vendedor_id = $1
+       ORDER BY a.data_criacao DESC`,
+      [req.userId]
+    );
+
+    return res.json({ anuncios: resultado.rows });
+  } catch (erro) {
+    console.error('Erro ao listar meus anúncios:', erro);
+    return res.status(500).json({ erro: 'Erro ao listar seus anúncios.' });
+  }
+});
+
+// ============================================================
+//  GET MINHAS COMPRAS — compras do comprador logado
+//  Usado na aba "Compras" do perfil.
+// ============================================================
+app.get('/api/usuario/compras', autenticar, async (req, res) => {
+  try {
+    const resultado = await pool.query(
+      `SELECT
+         co.id, co.preco, co.status, co.metodo_pagamento, co.parcelas, co.criada_em,
+         a.id AS anuncio_id, a.titulo AS anuncio_titulo,
+         u.id AS vendedor_id, u.nome AS vendedor_nome, u.sobrenome AS vendedor_sobrenome,
+         (SELECT imagem FROM anuncio_imagens
+           WHERE anuncio_id = a.id AND is_principal = TRUE LIMIT 1) AS anuncio_imagem,
+         (av.id IS NOT NULL) AS ja_avaliei
+       FROM compras co
+       JOIN anuncios a ON a.id = co.anuncio_id
+       JOIN usuarios u ON u.id = co.vendedor_id
+       LEFT JOIN avaliacoes av ON av.compra_id = co.id
+       WHERE co.comprador_id = $1
+       ORDER BY co.criada_em DESC`,
+      [req.userId]
+    );
+
+    return res.json({ compras: resultado.rows });
+  } catch (erro) {
+    console.error('Erro ao listar compras:', erro);
+    return res.status(500).json({ erro: 'Erro ao listar suas compras.' });
+  }
+});
+
+// ============================================================
+//  GET AVALIAÇÕES RECEBIDAS — avaliações de quem comprou de mim
+//  Usado na aba "Avaliações" do perfil.
+// ============================================================
+app.get('/api/usuario/avaliacoes', autenticar, async (req, res) => {
+  try {
+    const resultado = await pool.query(
+      `SELECT
+         av.id, av.nota, av.comentario, av.criada_em,
+         u.nome AS avaliador_nome, u.foto_perfil AS avaliador_foto,
+         a.titulo AS anuncio_titulo
+       FROM avaliacoes av
+       JOIN usuarios u ON u.id = av.avaliador_id
+       JOIN compras co ON co.id = av.compra_id
+       JOIN anuncios a ON a.id = co.anuncio_id
+       WHERE av.avaliado_id = $1
+       ORDER BY av.criada_em DESC`,
+      [req.userId]
+    );
+
+    const mediaResultado = await pool.query(
+      `SELECT AVG(nota)::float AS media, COUNT(*) AS total
+       FROM avaliacoes WHERE avaliado_id = $1`,
+      [req.userId]
+    );
+
+    return res.json({
+      avaliacoes: resultado.rows,
+      media: mediaResultado.rows[0]?.media ?? null,
+      total: parseInt(mediaResultado.rows[0]?.total) || 0,
+    });
+  } catch (erro) {
+    console.error('Erro ao listar avaliações:', erro);
+    return res.status(500).json({ erro: 'Erro ao listar avaliações.' });
+  }
+});
+
+// ============================================================
+//  POST AVALIAÇÃO — comprador avalia o vendedor de uma compra
+// ============================================================
+app.post('/api/avaliacoes', autenticar, async (req, res) => {
+  try {
+    const { compra_id, nota, comentario } = req.body;
+
+    if (!compra_id) {
+      return res.status(400).json({ erro: 'Informe a compra que está sendo avaliada.' });
+    }
+    const notaNum = parseInt(nota);
+    if (!notaNum || notaNum < 1 || notaNum > 5) {
+      return res.status(400).json({ erro: 'A nota deve ser um número de 1 a 5.' });
+    }
+    if (comentario && comentario.length > 500) {
+      return res.status(400).json({ erro: 'Comentário muito longo (máximo 500 caracteres).' });
+    }
+
+    const compra = await pool.query(
+      'SELECT comprador_id, vendedor_id FROM compras WHERE id = $1',
+      [compra_id]
+    );
+
+    if (compra.rows.length === 0) {
+      return res.status(404).json({ erro: 'Compra não encontrada.' });
+    }
+    if (compra.rows[0].comprador_id !== req.userId) {
+      return res.status(403).json({ erro: 'Você só pode avaliar suas próprias compras.' });
+    }
+
+    const jaAvaliada = await pool.query(
+      'SELECT id FROM avaliacoes WHERE compra_id = $1', [compra_id]
+    );
+    if (jaAvaliada.rows.length > 0) {
+      return res.status(409).json({ erro: 'Você já avaliou esta compra.' });
+    }
+
+    const nova = await pool.query(
+      `INSERT INTO avaliacoes (compra_id, avaliador_id, avaliado_id, nota, comentario)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, nota, comentario, criada_em`,
+      [compra_id, req.userId, compra.rows[0].vendedor_id, notaNum, comentario?.trim() || null]
+    );
+
+    return res.status(201).json({
+      mensagem: 'Avaliação enviada com sucesso!',
+      avaliacao: nova.rows[0],
+    });
+  } catch (erro) {
+    console.error('Erro ao registrar avaliação:', erro);
+    return res.status(500).json({ erro: 'Erro ao registrar avaliação.' });
   }
 });
 
@@ -1187,6 +1344,66 @@ app.get('/api/pagamentos/:paymentId', async (req, res) => {
   } catch (erro) {
     console.error('Erro ao consultar pagamento:', erro);
     return res.status(500).json({ erro: 'Erro ao consultar o pagamento.' });
+  }
+});
+
+// ============================================================
+//  PAGAMENTO — confirma e persiste a compra no banco
+//  Chamada pela tela /compra-realizada assim que o pagamento é
+//  confirmado como aprovado junto ao Mercado Pago. Idempotente:
+//  pode ser chamada mais de uma vez pro mesmo payment_id.
+// ============================================================
+app.post('/api/compras/confirmar', autenticar, async (req, res) => {
+  try {
+    const { payment_id } = req.body;
+    if (!payment_id) {
+      return res.status(400).json({ erro: 'Informe o payment_id do pagamento.' });
+    }
+
+    const payment = new Payment(mp);
+    const dados = await payment.get({ id: payment_id });
+
+    if (dados.status !== 'approved') {
+      return res.status(200).json({ registrada: false, status: dados.status });
+    }
+
+    const anuncioId = dados.external_reference;
+    const anuncio = await pool.query(
+      'SELECT id, vendedor_id, preco, status FROM anuncios WHERE id = $1',
+      [anuncioId]
+    );
+
+    if (anuncio.rows.length === 0) {
+      return res.status(404).json({ erro: 'Anúncio da compra não foi encontrado.' });
+    }
+
+    const { vendedor_id, preco } = anuncio.rows[0];
+
+    if (vendedor_id === req.userId) {
+      return res.status(400).json({ erro: 'Você não pode confirmar uma compra do seu próprio anúncio.' });
+    }
+
+    const compra = await pool.query(
+      `INSERT INTO compras
+        (anuncio_id, comprador_id, vendedor_id, preco, payment_id, status, metodo_pagamento, parcelas)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       ON CONFLICT (payment_id) DO UPDATE SET status = EXCLUDED.status
+       RETURNING id, anuncio_id, preco, status, criada_em`,
+      [
+        anuncioId, req.userId, vendedor_id, preco,
+        String(payment_id), dados.status, dados.payment_method_id, dados.installments,
+      ]
+    );
+
+    await pool.query(
+      `UPDATE anuncios SET status = 'vendido' WHERE id = $1 AND status = 'ativo'`,
+      [anuncioId]
+    );
+
+    return res.status(201).json({ registrada: true, compra: compra.rows[0] });
+  } catch (erro) {
+    console.error('Erro ao confirmar compra:', erro);
+    return res.status(500).json({ erro: 'Erro ao confirmar a compra.' });
   }
 });
 
