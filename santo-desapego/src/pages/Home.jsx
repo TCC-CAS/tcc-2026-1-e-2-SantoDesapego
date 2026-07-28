@@ -347,7 +347,7 @@ const Home = () => {
 
         {/* ── Nav de categorias — linha única com scroll horizontal ── */}
         <nav className="nav-categories">
-          <Link to="/explorar"><IconGrid /><span>Todos</span></Link>
+          <Link to="/explorar" className="nav-cat-all"><IconGrid /><span>Todos</span></Link>
           <Link to="/explorar?categoria_id=1"><IconSofa /><span>Móveis & Casa</span></Link>
           <Link to="/explorar?categoria_id=2"><IconLaptop /><span>Eletrônicos</span></Link>
           <Link to="/explorar?categoria_id=3"><IconShirt /><span>Moda</span></Link>
