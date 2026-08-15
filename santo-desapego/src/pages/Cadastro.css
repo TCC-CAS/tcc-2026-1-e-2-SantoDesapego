@@ -1,0 +1,423 @@
+/* ============================================================
+   CADASTRO.CSS — Estilos exclusivos da tela de cadastro
+   Depende de: globals.css
+   ============================================================ */
+
+/* ── Wrapper da página ──────────────────────────────────── */
+.cadastro-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+/* ── Layout de duas colunas ─────────────────────────────── */
+.cadastro-page {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  flex: 1;
+}
+
+/* ============================================================
+   PAINEL ESQUERDO (verde)
+   ============================================================ */
+.left-panel {
+  background: var(--forest);
+  padding: 3.5rem 2.8rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Círculos decorativos de fundo */
+.left-panel::before,
+.left-panel::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.left-panel::before {
+  top: -100px; right: -100px;
+  width: 400px; height: 400px;
+  background: var(--mustard);
+  opacity: 0.07;
+}
+.left-panel::after {
+  bottom: -60px; left: -60px;
+  width: 300px; height: 300px;
+  background: var(--terracotta);
+  opacity: 0.1;
+}
+
+/* Kicker / badge pulsante */
+.left-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 0.4rem 1rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--mustard-soft);
+  margin-bottom: 1.8rem;
+  width: fit-content;
+  position: relative;
+  z-index: 1;
+}
+.kicker-dot {
+  width: 7px; height: 7px;
+  background: var(--mustard-soft);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  flex-shrink: 0;
+}
+
+/* Headline */
+.left-panel h2 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(1.8rem, 2.6vw, 2.8rem);
+  line-height: 1.06;
+  letter-spacing: -0.03em;
+  color: var(--cream);
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1;
+}
+.left-panel h2 em { font-style: italic; font-weight: 400; color: var(--mustard-soft); }
+
+.left-panel > p {
+  color: rgba(244, 239, 228, 0.7);
+  font-size: 1rem;
+  max-width: 360px;
+  margin-bottom: 2.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* Lista de benefícios */
+.benefits-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  z-index: 1;
+}
+.benefits-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  color: rgba(244, 239, 228, 0.85);
+  font-size: 0.9rem;
+}
+.benefit-icon {
+  width: 34px; height: 34px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  font-size: 0.95rem;
+}
+.benefit-text strong { display: block; color: var(--cream); font-weight: 600; margin-bottom: 0.1rem; font-size: 0.9rem; }
+.benefit-text span   { font-size: 0.82rem; color: rgba(244, 239, 228, 0.6); }
+
+/* Depoimento */
+.left-testimonial {
+  margin-top: 2.5rem;
+  padding: 1.2rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-lg);
+  position: relative;
+  z-index: 1;
+}
+.left-testimonial p { color: rgba(244, 239, 228, 0.85); font-style: italic; font-size: 0.88rem; margin-bottom: 1rem; }
+
+.testimonial-author { display: flex; align-items: center; gap: 0.8rem; }
+.testimonial-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--terracotta);
+  display: grid; place-items: center;
+  color: var(--cream);
+  font-weight: 700;
+  font-size: 0.82rem;
+  flex-shrink: 0;
+}
+.testimonial-name strong { display: block; color: var(--cream); font-size: 0.85rem; font-weight: 600; }
+.testimonial-name span   { font-size: 0.76rem; color: rgba(244, 239, 228, 0.5); }
+
+/* ============================================================
+   PAINEL DIREITO (formulário)
+   ============================================================ */
+.right-panel {
+  background: var(--paper);
+  padding: 3rem 3.5rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+/* ── Indicador de etapas ────────────────────────────────── */
+.form-header { margin-bottom: 2rem; }
+
+.step-indicator { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.2rem; }
+.step-dot {
+  width: 28px; height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+.step-dot.active { background: var(--terracotta); }
+.step-dot.done   { background: var(--forest); }
+
+.form-header h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.9rem;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+}
+.form-header h1 em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+.form-header p     { color: var(--ink-muted); font-size: 0.93rem; }
+
+/* ── OAuth ──────────────────────────────────────────────── */
+.oauth-buttons { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; }
+.oauth-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--cream);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  cursor: pointer;
+}
+.oauth-btn:hover { border-color: var(--ink); color: var(--ink); background: var(--cream-soft); }
+
+/* ── Divisor ────────────────────────────────────────────── */
+.divider { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.divider::before,
+.divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.divider span   { font-size: 0.8rem; color: var(--ink-muted); font-weight: 500; white-space: nowrap; }
+
+/* ── Formulário ─────────────────────────────────────────── */
+.signup-form { display: flex; flex-direction: column; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.field-group { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+.field-group.no-mb { margin-bottom: 0; }
+
+.field-label { font-size: 0.85rem; font-weight: 600; color: var(--ink-soft); }
+.field-label .required { color: var(--terracotta); margin-left: 2px; }
+
+/* Input com ícone à esquerda */
+.field-input-wrap { position: relative; }
+.field-input-wrap > svg:first-child {
+  position: absolute;
+  left: 0.9rem; top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.field-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--cream);
+  font-family: inherit;
+  font-size: 0.93rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  appearance: none;
+}
+.field-input::placeholder { color: var(--ink-muted); }
+.field-input:focus        { border-color: var(--terracotta); background: var(--paper); box-shadow: 0 0 0 3px rgba(193,75,53,0.08); }
+.field-input.error        { border-color: var(--error); background: #FFF5F3; }
+.field-input.success      { border-color: var(--success); }
+
+.field-hint  { font-size: 0.76rem; color: var(--ink-muted); }
+.field-error { font-size: 0.76rem; color: var(--error); display: flex; align-items: center; gap: 0.3rem; }
+
+/* ── Toggle de senha ────────────────────────────────────── */
+.password-toggle {
+  position: absolute;
+  right: 0.9rem; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-muted); padding: 0.2rem;
+  display: flex; align-items: center;
+}
+.password-toggle:hover { color: var(--ink); }
+
+/* ── Força da senha ─────────────────────────────────────── */
+.password-strength { margin-top: 0.45rem; }
+.strength-bar { display: flex; gap: 4px; margin-bottom: 0.35rem; }
+.strength-seg { flex: 1; height: 4px; border-radius: 2px; background: var(--border); transition: background 0.3s; }
+.strength-seg.weak   { background: var(--terracotta); }
+.strength-seg.medium { background: var(--mustard); }
+.strength-seg.strong { background: var(--forest); }
+
+.strength-label        { font-size: 0.76rem; color: var(--ink-muted); }
+.strength-label.weak   { color: var(--terracotta); }
+.strength-label.medium { color: var(--mustard); }
+.strength-label.strong { color: var(--forest); }
+
+/* ── CEP loader / ok ────────────────────────────────────── */
+.cep-loader { position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%); display: none; }
+.cep-loader.visible { display: block; }
+.cep-loader span {
+  display: block; width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--terracotta);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+.cep-ok { position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--success); display: none; }
+.cep-ok.visible { display: flex; }
+
+/* ── Select ─────────────────────────────────────────────── */
+.field-select {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 2.5rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--cream);
+  font-family: inherit;
+  font-size: 0.93rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  appearance: none;
+  cursor: pointer;
+}
+.field-select:focus { border-color: var(--terracotta); background: var(--paper); box-shadow: 0 0 0 3px rgba(193,75,53,0.08); }
+
+.select-wrap { position: relative; }
+.select-wrap .select-icon  { position: absolute; left: 0.9rem;  top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ink-muted); }
+.select-wrap .select-arrow { position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--ink-muted); }
+
+/* ── Checkboxes ─────────────────────────────────────────── */
+.checkbox-group { display: flex; align-items: flex-start; gap: 0.7rem; margin-bottom: 0.9rem; }
+.checkbox-custom {
+  width: 20px; height: 20px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  background: var(--cream);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  display: grid; place-items: center;
+  margin-top: 1px;
+}
+.checkbox-custom.checked { background: var(--forest); border-color: var(--forest); }
+.checkbox-custom.checked::after {
+  content: "";
+  display: block;
+  width: 10px; height: 7px;
+  border-left: 2px solid white;
+  border-bottom: 2px solid white;
+  transform: rotate(-45deg) translateY(-1px);
+}
+.checkbox-label { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.5; cursor: pointer; }
+.checkbox-label a { color: var(--terracotta); font-weight: 600; border-bottom: 1px solid var(--terracotta-soft); }
+.checkbox-label a:hover { border-color: var(--terracotta); }
+
+/* ── Rótulo de seção dentro do formulário ───────────────── */
+.form-section-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+  margin: 1.25rem 0 1rem;
+}
+
+/* ── Botão submit (usa .btn-dark do globals + override de margem) ── */
+.btn-submit { margin-top: 1.25rem; }
+
+/* ── Rodapé do formulário ───────────────────────────────── */
+.form-footer { text-align: center; margin-top: 1.2rem; font-size: 0.88rem; color: var(--ink-muted); }
+.form-footer a { color: var(--terracotta); font-weight: 600; border-bottom: 1px solid var(--terracotta-soft); }
+
+/* ── Estado de sucesso ──────────────────────────────────── */
+.success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem 0;
+}
+.success-icon {
+  width: 72px; height: 72px;
+  background: var(--forest);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  color: var(--cream);
+  margin-bottom: 1.5rem;
+  box-shadow: 4px 4px 0 var(--mustard);
+  animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.success-state h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.7rem; color: var(--ink); margin-bottom: 0.6rem; }
+.success-state h2 em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+.success-state p   { color: var(--ink-muted); max-width: 340px; margin-bottom: 2rem; font-size: 0.93rem; }
+
+.btn-success {
+  background: var(--terracotta);
+  color: var(--cream);
+  padding: 0.9rem 2rem;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: 0.98rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-success:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--ink); }
+
+/* ============================================================
+   RESPONSIVO
+   ============================================================ */
+@media (max-width: 900px) {
+  .cadastro-page { grid-template-columns: 1fr; }
+  .left-panel { padding: 2.5rem 1.5rem; }
+  .left-testimonial { display: none; }
+  .right-panel { padding: 2rem 1.5rem; }
+}
+
+@media (max-width: 540px) {
+  .form-row       { grid-template-columns: 1fr; }
+  .oauth-buttons  { flex-direction: column; }
+  .right-panel    { padding: 1.5rem 1.2rem; }
+  .form-header h1 { font-size: 1.5rem; }
+}

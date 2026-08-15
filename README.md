@@ -1,11 +1,73 @@
-# Desenvolvimento_TCC
-Repositório padrão para inicio do desenvovimento de TCC
+# Santo Desapego - Plataforma de Comércio Local
 
-Ênfase no acompanhamento e desenvolvimento do projeto de TCC 1 (proposta) e 2 (aplicação.
+> **Trabalho de Conclusão de Curso** | Bacharelado em Sistemas de Informação - SENAC
 
-Prezado alunos(as), Tudo bem?
+## 📌 Sobre o Projeto
+O **Santo Desapego** é um Sistema de Intermediação voltado para a economia compartilhada e o comércio local. O projeto visa facilitar a troca, venda e doação de itens entre usuários da mesma comunidade ou região, promovendo o consumo consciente e a circulação de bens parados.
 
-A partir de agora o acompanhamento do desenvolvimento de seu TCC 1 ou 2 será tanto em sala de aula como aqui, com o uso deste recurso. Vocês devem fazer um desenvolvimento contínuo, respeitando as datas das entregas previstas por seu professor.
+## 🎨 Design e Wireframes (Figma)
+O protótipo e os fluxos de usuário podem ser visualizados diretamente no Figma através do link abaixo:
+👉 [Projeto Santo Desapego no Figma](https://www.figma.com/design/dCPBASNwCdMsIpBvmW22EU/TCC---Grupo-11?node-id=13-1633&p=f&t=rXVQKNNMwDPULb80-0)
 
-## Atenção!
-Este arquivo deve ser alterado no decorrer do desenvolvimento de seu TCC.
+## 🎯 Objetivos
+- Facilitar a conexão entre compradores e vendedores locais.
+- Incentivar a economia circular e sustentável.
+- Oferecer uma plataforma segura e intuitiva para intermediação de produtos.
+
+## 💻 Tecnologias Utilizadas
+- **Frontend:** React 19 + Vite, React Router, Leaflet (mapas), Google OAuth
+- **Backend:** Node.js + Express 5
+- **Banco de Dados:** PostgreSQL
+- **Autenticação:** JWT, bcrypt, Google Auth Library
+- **Pagamentos:** Mercado Pago
+- **Versionamento:** Git & GitHub
+
+## 👥 Integrantes do Grupo
+- **Luisa Vitoria Aquino Nascimento**
+- **Maria Erica Joana da Conceição Cruz**
+- **Paulo Henrique Alves Santana**
+
+**Orientador:** Prof. Jose Martinele Alves Silva
+
+## 📁 Estrutura do Repositório
+- `/santo-desapego`: Frontend da aplicação (React + Vite).
+- `/santo-desapego-api`: Backend/API da aplicação (Node.js + Express + PostgreSQL).
+- `/docs`: Diagramas, arquitetura, casos de uso, modelagem de banco, cronogramas e entregas acadêmicas.
+
+## 🚀 Como executar o projeto
+
+### Pré-requisitos
+- Node.js
+- PostgreSQL
+
+### Backend (`santo-desapego-api`)
+```bash
+cd santo-desapego-api
+npm install
+```
+Crie um arquivo `.env` na raiz de `santo-desapego-api` com as variáveis:
+```
+DB_USER=
+DB_HOST=
+DB_NAME=
+DB_PASSWORD=
+DB_PORT=5432
+JWT_SECRET=
+PORT=
+FRONTEND_URL=
+MP_ACCESS_TOKEN=
+```
+Crie o banco de dados usando o script `schema.sql` e inicie o servidor:
+```bash
+npm run dev
+```
+
+### Frontend (`santo-desapego`)
+```bash
+cd santo-desapego
+npm install
+npm run dev
+```
+
+---
+© 2026 - Bacharelado em Sistemas de Informação - Centro Universitário Senac
