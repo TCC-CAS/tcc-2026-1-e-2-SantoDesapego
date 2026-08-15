@@ -54,23 +54,21 @@ const Anunciar = () => {
       fetch(`${API_URL}/api/categorias`).then((r) => r.json()),
       fetch(`${API_URL}/api/usuario/perfil`, {
         headers: { Authorization: `Bearer ${token}` },
-      }).then((r) => r.json().then((data) => ({ status: r.status, data }))),
+      }).then((r) => r.json()),
     ])
       .then(([cats, perfil]) => {
         if (cats.categorias) setCategorias(cats.categorias);
-        if (perfil.data.usuario) {
-          setUsuario(perfil.data.usuario);
+        if (perfil.usuario) {
+          setUsuario(perfil.usuario);
           // Pré-preenche CEP e bairro do cadastro
           setForm((f) => ({
             ...f,
-            cep: maskCEP(perfil.data.usuario.cep || ''),
-            bairro: perfil.data.usuario.bairro || '',
+            cep: maskCEP(perfil.usuario.cep || ''),
+            bairro: perfil.usuario.bairro || '',
           }));
-        } else if (perfil.status === 401) {
+        } else {
           localStorage.removeItem('sd_token');
           navigate('/login');
-        } else {
-          setErroGlobal('Não foi possível carregar seus dados. Tente novamente.');
         }
       })
       .catch(() => alert('Erro ao carregar dados.'))
